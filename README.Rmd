@@ -17,6 +17,8 @@ knitr::opts_chunk$set(
 # neocache
 
 <!-- badges: start -->
+[![Codecov test coverage](https://codecov.io/gh/alexpghayes/neocache/branch/master/graph/badge.svg)](https://codecov.io/gh/alexpghayes/neocache?branch=master)
+[![R build status](https://github.com/alexpghayes/neocache/workflows/R-CMD-check/badge.svg)](https://github.com/alexpghayes/neocache/actions)
 <!-- badges: end -->
 
 `neocache` facilitates robust sampling of the Twitter graph. The basic idea is to save any data into a local cache as you as you get it. `neocache` is build on top of [`socialsampler`](https://github.com/alexpghayes/socialsampler) and [`rtweet`](https://rtweet.info/).
