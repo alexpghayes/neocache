@@ -4,6 +4,11 @@
 # neocache
 
 <!-- badges: start -->
+
+[![Codecov test
+coverage](https://codecov.io/gh/alexpghayes/neocache/branch/master/graph/badge.svg)](https://codecov.io/gh/alexpghayes/neocache?branch=master)
+[![R build
+status](https://github.com/alexpghayes/neocache/workflows/R-CMD-check/badge.svg)](https://github.com/alexpghayes/neocache/actions)
 <!-- badges: end -->
 
 `neocache` facilitates robust sampling of the Twitter graph. The basic
@@ -23,6 +28,14 @@ You can install the development version of `neocache` with:
 install.packages("devtools")
 devtools::install_github("alexpghayes/neocache")
 ```
+
+## Running Neo4J through Docker
+
+``` bash
+docker run --name neo4j --env NEO4J_AUTH=neo4j/password --publish=7474:7474 --publish=7687:7687 -d neo4j:3.5.21
+```
+
+# Ignore everything below here
 
 ## Inspect the current neocache
 
