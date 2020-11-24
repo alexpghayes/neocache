@@ -115,7 +115,7 @@ add_new_friends <- function(user_ids, sample_size) {
   }
 
   # Add the users to the graph, then give them edge data
-  update_users(user_ids)
+  merge_users(user_ids, lookup = FALSE)
   db_connect_friends(user_ids, sample_size = sample_size)
 }
 

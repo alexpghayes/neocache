@@ -8,7 +8,7 @@
 lookup_users <- function(user_ids) {
   user_data <- db_lookup_users(user_ids)
   not_in_graph <- setdiff(user_ids, user_data$user_id)
-  new_user_data <- update_users(not_in_graph, lookup = TRUE)
+  new_user_data <- add_users_data(not_in_graph, lookup = TRUE)
   not_sampled <- filter(user_data, is.na(sampled_at))
 
   if (dim(not_sampled)[1] == 0) {
@@ -16,7 +16,7 @@ lookup_users <- function(user_ids) {
   } else {
     upgraded_user_data <- not_sampled %>%
       pull(user_id) %>%
-      update_users(lookup = TRUE)
+      merge_users(lookup = TRUE)
   }
 
   user_data <- user_data %>%
@@ -69,7 +69,7 @@ db_lookup_users <- function(user_ids) {
 #' @return The tibble of user data, with one row for each (accessible)
 #' user in `users` and one column for each property of `User` nodes
 #' in the graph database.
-update_users <- function(user_ids, sample_size = 150, lookup = FALSE) {
+merge_users <- function(user_ids, lookup, sample_size = 150) {
 
   con <- get_connexion()
 
