@@ -19,9 +19,7 @@ lookup_users <- function(user_ids) {
       merge_users(lookup = TRUE)
   }
 
-  user_data <- user_data %>%
-    filter(!is.na(sampled_at))
-
+  user_data <- filter(user_data, !is.na(sampled_at))
   bind_rows(user_data, new_user_data, upgraded_user_data)
 }
 
@@ -41,42 +39,48 @@ db_lookup_users <- function(user_ids) {
   # database, should not return a row in the output tibble for that
   # user. if no users are in the db should return an empty tibble with one
   # column for each User property
-  user_ids <- c(user_ids)
-  data <- paste('MATCH (n) WHERE n.user_id in ["',
-                paste(user_ids, collapse = '","'),
-                '"] RETURN n',
-                sep = ""
+  user_data <- glue('MATCH (n) WHERE n.user_id in ["',
+               glue_collapse(user_ids, sep='","'),
+               '"] RETURN n',
   ) %>%
     sup4j(con)
 
-  if (length(data) == 0) {
+  # If the users' data does not exist in the DB, return an empty lookup,
+  # otherwise return the users' data
+  if (length(user_data) == 0) {
     empty_lookup()
   } else {
-    data[[1]] %>%
+    user_data[[1]] %>%
       bind_rows(empty_lookup())
   }
 }
 
+
+USER_DATA_PROPERTIES <- c(
+  "screen_name", "protected", "followers_count", "friends_count",
+  "listed_count", "statuses_count", "favourites_count", "account_created_at", "verified", "profile_url",
+  "profile_expanded_url", "account_lang", "profile_banner_url", "profile_background_url", "profile_image_url",
+  "name", "location", "description", "url"
+)
 
 #' TODO: Rename this function. This function is used both to update present users
 #' and add new users to the db.
 #'
 #' @param user_ids the user_ids to update
 #' @param lookup should new Twitter profile data be updated for each user_id?
-#' @param sample_size how many friends/followers should be looked up at a time if
+#' @param n how many friends/followers should be looked up at a time if
 #' the respective argument is set to TRUE?
 #'
 #' @return The tibble of user data, with one row for each (accessible)
 #' user in `users` and one column for each property of `User` nodes
 #' in the graph database.
-merge_users <- function(user_ids, lookup, sample_size = 150) {
+merge_users <- function(user_ids, lookup, n = 150) {
 
   con <- get_connexion()
 
   # make sure to set sampled_at to Sys.time() and
   # sampled_friends_at and sampled_followers_at to NULL
   # return data on users
-  user_ids <- c(user_ids)
   if (length(user_ids) == 0) {
     return(empty_lookup())
   }
@@ -92,50 +96,32 @@ merge_users <- function(user_ids, lookup, sample_size = 150) {
     return(empty_lookup())
   }
 
-  properties <- c(
-    "screen_name", "protected", "followers_count", "friends_count",
-    "listed_count", "statuses_count", "favourites_count", "account_created_at", "verified", "profile_url",
-    "profile_expanded_url", "account_lang", "profile_banner_url", "profile_background_url", "profile_image_url",
-    "name", "location", "description", "url"
-  )
-  prop_types <- c(
-    "chr", "bool", "num", "num", "num", "num", "num", "chr", "bool", "chr",
-    "chr", "chr", "chr", "chr", "chr", "chr", "chr", "chr", "chr"
-  )
   nodes <- empty_lookup()
-  for (i in seq(1, dim(user_info)[1])) {
+  for (i in seq(1, nrow(user_info))) {
     info <- user_info[i, ]
-    create_node <- paste('MERGE (n:User {user_id:"', info$user_id, '"}) SET ',
-                         "n.sampled_at=",
-                         if (lookup) {
-                           paste('"', Sys.time(), '"', sep = "")
-                         } else {
-                           "NULL"
-                         },
-                         ",",
-                         sep = ""
+    create_node <- glue('MERGE (n:User {{user_id:"{info$user_id}"}}) SET ',
+                         "n.sampled_at={if(lookup) Sys.time() else NULL},",
     )
 
     # Adds each property to to the Neo4j CYPHER query
-    for (j in seq(1, length(properties))) {
-      if (is.na(info[[properties[j]]])) {
+    for (j in seq(1, length(USER_DATA_PROPERTIES))) {
+      property_data <- info[[USER_DATA_PROPERTIES[j]]]
+      if (is.na(property_data)) {
         next
       }
 
-      create_node <- paste(create_node, "n.", properties[j], "=", sep = "")
-
-      if (prop_types[j] == "chr") {
-        create_node <- paste(create_node, '"', info[[properties[j]]], '",', sep = "")
+      if (class(property_data) == "character") {
+        create_node <- glue('{create_node} n.{USER_DATA_PROPERTIES[j]}="{property_data}",')
       } else {
-        create_node <- paste(create_node, info[[properties[j]]], ",", sep = "")
+        create_node <- glue('{create_node} n.{USER_DATA_PROPERTIES[j]}={property_data}",')
       }
     }
 
-    new_node <- paste(substr(create_node, 1, nchar(create_node) - 1), " RETURN n", sep = "") %>%
+    new_node <- glue('{substr(create_node, 1, nchar(create_node) - 1} RETURN n') %>%
       sup4j(con)
 
-    if (length(new_node) != 0) {
-      nodes <- nodes %>% bind_rows(new_node$n)
+    if (nrow(new_node) != 0) {
+      nodes <- bind_rows(nodes, new_node$n)
     }
   }
 

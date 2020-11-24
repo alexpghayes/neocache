@@ -1,20 +1,21 @@
 
 #' Gets the friends for the given user_id and creates the edges in the graph.
+#' This function is only ever called by add_new_friends.
 #'
 #' @param user_ids user_ids who are already in the database and
 #' do not have friend edge data
 #'
 #' @return a nx2 tibble where the <from> column is user_id and the <to> column
 #' is the user_id of user_id's friends
-db_connect_friends <- function(user_ids, sample_size) {
+db_connect_friends <- function(user_ids, n) {
 
   con <- get_connexion()
 
   to_ret <- empty_user_edges()
   for (user_id in user_ids) {
-    friends <- rtweet::get_friends(user_id, n = sample_size)
+    friends <- rtweet::get_friends(user_id, n = n)
     sup4j(
-      paste('MATCH (n:User {user_id:"', user_id, '"}) SET n.sampled_friends_at="', Sys.time(), '"', sep = ""),
+      glue('MATCH (n:User {{user_id:"{user_id}"}}) SET n.sampled_friends_at="{Sys.time()}"'),
       con
     )
 
@@ -22,9 +23,8 @@ db_connect_friends <- function(user_ids, sample_size) {
     for (user in friends$user_id) {
       # TODO: Improve this CYPHER query, there should be a way to create all of the edges at once
       temp <- sup4j(
-        paste('MERGE (from:User {user_id:"', user_id, '"}) MERGE (to:User {user_id:"', user,
-              '"}) MERGE (from)-[r:FOLLOWS]->(to)',
-              sep = ""
+        glue('MERGE (from:User {{user_id:"{user_id}"}}) MERGE (to:User {{user_id:"{user}"}}) ',
+              'MERGE (from)-[r:FOLLOWS]->(to)'
         ),
         con
       )
@@ -56,10 +56,9 @@ db_get_friends <- function(user_ids) {
   con <- get_connexion()
 
   results <- sup4j(
-    paste('MATCH (from:User),(to:User) WHERE from.user_id in ["',
-          paste(user_ids, collapse = '","'),
-          '"] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id',
-          sep = ""
+    glue('MATCH (from:User),(to:User) WHERE from.user_id in ["',
+         glue_collapse(user_ids, sep = '","'),
+         '"] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id',
     ),
     con
   )
@@ -77,7 +76,7 @@ db_get_friends <- function(user_ids) {
 #'
 #' @return A tibble where each row corresponds to a follower relationship
 #' from the user in the 'from' column to the user in to 'to' column
-get_friends <- function(user_ids, sample_size = 150) {
+get_friends <- function(user_ids, n = 150) {
   # here we will need to query twice: once to ask who we actually
   # have *complete* friendship edges for, and then a second time to get
   # those friendship edges
@@ -86,8 +85,8 @@ get_friends <- function(user_ids, sample_size = 150) {
 
 
   # sample the friends of all the users w/o sampled friends
-  new_edges <- add_new_friends(status$not_in_graph, sample_size)
-  upgraded_edges <- add_new_friends(status$sampled_friends_at_is_null, sample_size)
+  new_edges <- add_new_friends(status$not_in_graph, n)
+  upgraded_edges <- add_new_friends(status$sampled_friends_at_is_null, n)
   existing_edges <- db_get_friends(status$sampled_friends_at_not_null)
 
   # need to be careful about duplicate edges here. ideally
@@ -101,10 +100,10 @@ get_friends <- function(user_ids, sample_size = 150) {
 
 
 #' @param user_ids a list of user_ids to add friend edges to the db for
-#' @param sample_size how many friends to sample at a time for each user
+#' @param n how many friends to sample at a time for each user
 #'
 #' @return a 2-column tibble edge list from user_ids to their friends
-add_new_friends <- function(user_ids, sample_size) {
+add_new_friends <- function(user_ids, n) {
   # set sampled_friends_at to Sys.time()
   # sampled_at and sampled_followers_at default to NULL
   # return friends of each user
@@ -116,7 +115,7 @@ add_new_friends <- function(user_ids, sample_size) {
 
   # Add the users to the graph, then give them edge data
   merge_users(user_ids, lookup = FALSE)
-  db_connect_friends(user_ids, sample_size = sample_size)
+  db_connect_friends(user_ids, n = n)
 }
 
 
