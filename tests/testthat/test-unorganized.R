@@ -15,10 +15,10 @@ prep_tests <- function() {
   r_get_followers <- NULL
   for(user in user_ids)
     r_get_followers <- r_get_followers %>%
-                       bind_rows(tibble(to=user, rtweet::get_followers(user, n=SAMPLE_SIZE)))
+    bind_rows(tibble(to=user, rtweet::get_followers(user, n=SAMPLE_SIZE)))
 
   r_get_followers <- r_get_followers %>%
-                     rename(from=user_id)
+    rename(from=user_id)
 
   assign("r_get_followers", r_get_followers, envir=globalenv())
 }

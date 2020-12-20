@@ -2,9 +2,10 @@
 % Please edit documentation in R/get_friends.R
 \name{db_connect_friends}
 \alias{db_connect_friends}
-\title{Gets the friends for the given user_id and creates the edges in the graph.}
+\title{Gets the friends for the given user_id and creates the edges in the graph.
+This function is only ever called by add_new_friends.}
 \usage{
-db_connect_friends(user_ids, sample_size)
+db_connect_friends(user_ids, n)
 }
 \arguments{
 \item{user_ids}{user_ids who are already in the database and
@@ -16,4 +17,5 @@ is the user_id of user_id's friends
 }
 \description{
 Gets the friends for the given user_id and creates the edges in the graph.
+This function is only ever called by add_new_friends.
 }
