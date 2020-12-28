@@ -149,3 +149,56 @@ friend_sampling_status <- function(user_ids) {
     sampled_friends_at_not_null = sampled_users
   )
 }
+
+
+
+
+speedracer <- function(n) {
+  start_neo4j()
+  clear____db()
+  con <- get_connexion()
+
+  # tictoc::tic()
+  # results <- NULL
+  # # Current implementation, from lines 23-30
+  # for (user in joe$user_id[1:250]) {
+  #   # TODO: Improve this CYPHER query, there should be a way to create all of the edges at once
+  #   temp <- sup4j(
+  #     glue('MERGE (from:User {{user_id:"{user_id}"}}) MERGE (to:User {{user_id:"{user}"}}) ',
+  #          'MERGE (from)-[r:FOLLOWS]->(to)'
+  #     ),
+  #     con
+  #   )
+  #   results <- results %>%
+  #     bind_rows(tibble(from = user_id, to = user))
+  # }
+  # tictoc::toc() # takes ~15 seconds w/ 250 entries and Docker
+
+
+  tictoc::tic()
+  # First, add the empty friend nodes
+  tmp <- tempfile()
+  writeLines(c(':LABEL,user_id', paste0('User,', joe$user_id)), tmp)
+  system(glue("docker cp {tmp} neocache_docker:/var/lib/neo4j/import/data.csv"))
+
+  qry <- "USING PERIODIC COMMIT 10000 LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row CREATE (n:User {user_id:row.ID})"
+  res <- qry %>% sup4j(con)
+  print(res)
+
+  tictoc::toc() # takes <1s to do 50,000 entries with Docker
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
