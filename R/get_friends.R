@@ -227,8 +227,8 @@ speedtest <- function() {
 
   tictoc::toc() # takes 1-2 seconds to do 75,000 entries with Docker
 
-  cat(glue("Total nodes in graph: {sup4j('MATCH (n) RETURN COUNT(n)')[[1]]$value[1]}\n"))
-  cat(glue("Total edges in graph: {sup4j('MATCH ()-[r]->() RETURN COUNT(r)')[[1]]$value[1]}\n"))
+  print(glue("Total nodes in graph: {sup4j('MATCH (n) RETURN COUNT(n)')[[1]]$value[1]}"))
+  print(glue("Total edges in graph: {sup4j('MATCH ()-[r]->() RETURN COUNT(r)')[[1]]$value[1]}\n"))
 }
 
 
