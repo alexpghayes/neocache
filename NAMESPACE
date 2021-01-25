@@ -2,7 +2,10 @@
 
 export("%>%")
 export(get_connexion)
+export(lookup_users)
 import(dplyr)
 import(neo4r)
+importFrom(glue,glue)
+importFrom(glue,glue_collapse)
 importFrom(magrittr,"%>%")
 importFrom(tibble,tibble)

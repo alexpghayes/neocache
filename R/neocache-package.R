@@ -1,6 +1,7 @@
 #' @import dplyr
 #' @import neo4r
 #' @importFrom tibble tibble
+#' @importFrom glue glue glue_collapse
 #' @keywords internal
 "_PACKAGE"
 

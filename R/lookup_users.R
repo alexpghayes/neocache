@@ -5,6 +5,8 @@
 #' to one of the User properties. If a user cannot be sampled, should
 #' return nothing for that user. If no users can be sampled, should
 #' return an empty tibble with appropriate columns.
+#'
+#' @export
 lookup_users <- function(user_ids) {
   user_data <- db_lookup_users(user_ids)
   not_in_graph <- setdiff(user_ids, user_data$user_id)
@@ -39,20 +41,19 @@ db_lookup_users <- function(user_ids) {
   # database, should not return a row in the output tibble for that
   # user. if no users are in the db should return an empty tibble with one
   # column for each User property
-  user_data <- glue('MATCH (n) WHERE n.user_id in ["',
-               glue_collapse(user_ids, sep='","'),
-               '"] RETURN n',
-  ) %>%
-    sup4j(con)
+  user_string <- glue_collapse(user_ids, sep = '","')
+  query <- glue('MATCH (n) WHERE n.user_id in ["{user_string}"] RETURN n')
+
+  user_data <- sup4j(query)
 
   # If the users' data does not exist in the DB, return an empty lookup,
   # otherwise return the users' data
   if (length(user_data) == 0) {
-    empty_lookup()
-  } else {
-    user_data[[1]] %>%
-      bind_rows(empty_lookup())
+    return(empty_lookup())
   }
+
+  user_data[[1]] %>%
+    bind_rows(empty_lookup())
 }
 
 
@@ -74,7 +75,7 @@ USER_DATA_PROPERTIES <- c(
 #' @return The tibble of user data, with one row for each (accessible)
 #' user in `users` and one column for each property of `User` nodes
 #' in the graph database.
-merge_users <- function(user_ids, lookup, n = 150) {
+add_users_data <- function(user_ids, lookup, n = 150) {
 
   con <- get_connexion()
 
@@ -96,6 +97,20 @@ merge_users <- function(user_ids, lookup, n = 150) {
     return(empty_lookup())
   }
 
+  # NATHAN: look into the following approach
+  # https://neo4j-rstats.github.io/user-guide/send.html#transform-elements-to-cypher-queries
+
+  # the current approach you are taking very incrementally grows a
+  # character vector and seems not ideal to me
+  #
+  # don't forget about setting sampled_at
+
+  query <- user_info %>%
+    select(USER_DATA_PROPERTIES) %>%
+    vec_to_cypher("User")
+
+  sup4j(paste("MERGE", query))
+
   nodes <- empty_lookup()
   for (i in seq(1, nrow(user_info))) {
     info <- user_info[i, ]
@@ -116,7 +131,9 @@ merge_users <- function(user_ids, lookup, n = 150) {
       }
     }
 
-    new_node <- glue('{substr(create_node, 1, nchar(create_node) - 1)} RETURN n') %>%
+    browser()
+
+    new_node <- glue('{substr(create_node, 1, nchar(create_node) - 1} RETURN n') %>%
       sup4j(con)
 
     if (length(new_node) != 0) {
