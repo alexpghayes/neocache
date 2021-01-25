@@ -99,9 +99,8 @@ merge_users <- function(user_ids, lookup, n = 150) {
   nodes <- empty_lookup()
   for (i in seq(1, nrow(user_info))) {
     info <- user_info[i, ]
-    create_node <- glue('MERGE (n:User {{user_id:"{info$user_id}"}}) SET ',
-                         "n.sampled_at={if(lookup) Sys.time() else NULL},",
-    )
+    create_node <- glue('MERGE (n:User {{user_id:"{info$user_id}"}}) ',
+                        'SET n.sampled_at={if(lookup) Sys.time() else NULL},')
 
     # Adds each property to to the Neo4j CYPHER query
     for (j in seq(1, length(USER_DATA_PROPERTIES))) {
@@ -117,10 +116,10 @@ merge_users <- function(user_ids, lookup, n = 150) {
       }
     }
 
-    new_node <- glue('{substr(create_node, 1, nchar(create_node) - 1} RETURN n') %>%
+    new_node <- glue('{substr(create_node, 1, nchar(create_node) - 1)} RETURN n') %>%
       sup4j(con)
 
-    if (nrow(new_node) != 0) {
+    if (length(new_node) != 0) {
       nodes <- bind_rows(nodes, new_node$n)
     }
   }

@@ -23,13 +23,6 @@ get_connexion <- function() {
 #' Title
 #' TODO: Add docs
 start_neo4j <- function() {
-  # Check if the container is already running
-  ps <- system("docker ps -a", intern = TRUE)
-  if(any(grepl("neocache_docker", ps, fixed = TRUE))) {
-    # Exit immediately if the container is already running
-    return(invisible())
-  }
-
   # Start the Docker container
   # First try to run the existing Docker container
   if(system("docker start neocache_docker") == 1) {

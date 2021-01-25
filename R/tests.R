@@ -2,6 +2,7 @@ library(neo4r)
 library(rtweet)
 library(tidyverse)
 library(magrittr)
+library(glue)
 
 # Users: NathanKolbow, nuhthan_kelbith, makpetersdorff, jacobpopp_,
 #        andrew25baker, # JoeBiden,

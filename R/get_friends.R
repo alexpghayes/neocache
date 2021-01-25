@@ -1,3 +1,31 @@
+#' @param tbl tibble containing columns for 'to' and 'from'
+#' TODO: add docs
+docker_bulk_connect_friends <- function(tbl) {
+  # Create the root user's node if it does not already exist
+  root_qry <- glue('MERGE (n:User {{user_id:"{tbl$from[1]}"}})')
+  sup4j(root_qry)
+  print("Root done.")
+
+  # Create temp file to write the data into
+  tmp <- tempfile()
+
+  # Write the data; we use cat instead of write to eliminate any trailing newline
+  cat(paste0('to\n', glue_collapse(tbl$to, sep="\n")), file = tmp)
+
+  # Copy the data into the docker container
+  system(glue("docker cp {tmp} neocache_docker:/var/lib/neo4j/import/data.csv"))
+
+  # Add a node for each of the root user's friends and connect the root user to them
+  ## This query runs on joe50k in ~2.75 minutes
+  connect_qry <- glue("LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row ",
+                     "MATCH (to:User {{user_id:'{tbl$from[1]}'}}) CREATE (from:User {{user_id:row.to}}) CREATE (from)-[:FOLLOWS]->(to)")
+
+  print(sup4j(connect_qry))
+  print("Connections done.")
+
+  file.remove(tmp)
+}
+
 
 #' Gets the friends for the given user_id and creates the edges in the graph.
 #' This function is only ever called by add_new_friends.
@@ -11,35 +39,45 @@ db_connect_friends <- function(user_ids, n) {
 
   con <- get_connexion()
 
-  to_ret <- empty_user_edges()
-  for (user_id in user_ids) {
-    friends <- rtweet::get_friends(user_id, n = n)
-    sup4j(
-      glue('MATCH (n:User {{user_id:"{user_id}"}}) SET n.sampled_friends_at="{Sys.time()}"'),
-      con
-    )
-
-    results <- NULL
-    for (user in friends$user_id) {
-      # TODO: Improve this CYPHER query, there should be a way to create all of the edges at once
-      temp <- sup4j(
-        glue('MERGE (from:User {{user_id:"{user_id}"}}) MERGE (to:User {{user_id:"{user}"}}) ',
-              'MERGE (from)-[r:FOLLOWS]->(to)'
-        ),
-        con
-      )
-      results <- results %>%
-        bind_rows(tibble(from = user_id, to = user))
-    }
-
-    if (length(results) == 2) {
-      # If length(results) == 2 then the user existed and everything worked properly
-      to_ret <- to_ret %>%
-        bind_rows(tibble(from = user_id, to = friends$user_id))
-    }
+  friends <- empty_user_edges()
+  for(user_id in user_ids) {
+    friends <- friends %>%
+      bind_rows(from=user_id, to=rtweet::get_friends(user_id, n = n))
   }
+  results <- docker_bulk_connect(friends)
 
-  to_ret
+
+  # OLD, SLOW IMPLEMENTATION
+  #
+  # to_ret <- empty_user_edges()
+  # for (user_id in user_ids) {
+  #   friends <- rtweet::get_friends(user_id, n = n)
+  #   sup4j(
+  #     glue('MATCH (n:User {{user_id:"{user_id}"}}) SET n.sampled_friends_at="{Sys.time()}"'),
+  #     con
+  #   )
+  #
+  #   results <- NULL
+  #   for (user in friends$user_id) {
+  #     # TODO: Improve this CYPHER query, there should be a way to create all of the edges at once
+  #     temp <- sup4j(
+  #       glue('MERGE (from:User {{user_id:"{user_id}"}}) MERGE (to:User {{user_id:"{user}"}}) ',
+  #             'MERGE (from)-[r:FOLLOWS]->(to)'
+  #       ),
+  #       con
+  #     )
+  #     results <- results %>%
+  #       bind_rows(tibble(from = user_id, to = user))
+  #   }
+  #
+  #   if (length(results) == 2) {
+  #     # If length(results) == 2 then the user existed and everything worked properly
+  #     to_ret <- to_ret %>%
+  #       bind_rows(tibble(from = user_id, to = friends$user_id))
+  #   }
+  # }
+  #
+  # to_ret
 }
 
 
@@ -152,16 +190,23 @@ friend_sampling_status <- function(user_ids) {
 
 
 
+#' Tests how quickly the current implementation can add 50,000 nodes to the graphs
+#' and connect each of these nodes to one other root node.
+speedtest <- function() {
+  if(!exists("joe")) {
+    joe <- rtweet::get_followers("joebiden", n="all")$user_id
+  }
 
-speedracer <- function(n) {
   start_neo4j()
   clear____db()
   con <- get_connexion()
 
+  # Old, much slower method that strictly uses neo4r:
+  #
   # tictoc::tic()
   # results <- NULL
   # # Current implementation, from lines 23-30
-  # for (user in joe$user_id[1:250]) {
+  # for (user in joe[1:250]) {
   #   # TODO: Improve this CYPHER query, there should be a way to create all of the edges at once
   #   temp <- sup4j(
   #     glue('MERGE (from:User {{user_id:"{user_id}"}}) MERGE (to:User {{user_id:"{user}"}}) ',
@@ -172,20 +217,18 @@ speedracer <- function(n) {
   #   results <- results %>%
   #     bind_rows(tibble(from = user_id, to = user))
   # }
-  # tictoc::toc() # takes ~15 seconds w/ 250 entries and Docker
+  # tictoc::toc() # takes ~15 seconds to add 250 nodes to the Neo4J graph
 
 
   tictoc::tic()
-  # First, add the empty friend nodes
-  tmp <- tempfile()
-  writeLines(c(':LABEL,user_id', paste0('User,', joe$user_id)), tmp)
-  system(glue("docker cp {tmp} neocache_docker:/var/lib/neo4j/import/data.csv"))
 
-  qry <- "USING PERIODIC COMMIT 10000 LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row CREATE (n:User {user_id:row.ID})"
-  res <- qry %>% sup4j(con)
-  print(res)
+  tbl <- bind_cols(joe, from='0') %>% rename(to=user_id)
+  docker_bulk_connect_friends(tbl)
 
-  tictoc::toc() # takes <1s to do 50,000 entries with Docker
+  tictoc::toc() # takes 1-2 seconds to do 75,000 entries with Docker
+
+  cat(glue("Total nodes in graph: {sup4j('MATCH (n) RETURN COUNT(n)')[[1]]$value[1]}\n"))
+  cat(glue("Total edges in graph: {sup4j('MATCH ()-[r]->() RETURN COUNT(r)')[[1]]$value[1]}\n"))
 }
 
 
