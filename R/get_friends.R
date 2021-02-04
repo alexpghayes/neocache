@@ -1,16 +1,14 @@
+#' This function only creates edges between nodes according to the supplied tbl.
+#' Node creation must happen BEFORE this function is called.
+#'
 #' @param tbl tibble containing columns for 'to' and 'from'
 #' TODO: add docs
 docker_bulk_connect_friends <- function(tbl) {
-  # Create the root user's node if it does not already exist
-  root_qry <- glue('MERGE (n:User {{user_id:"{tbl$from[1]}"}})')
-  sup4j(root_qry)
-  print("Root done.")
-
   # Create temp file to write the data into
   tmp <- tempfile()
 
   # Write the data; we use cat instead of write to eliminate any trailing newline
-  cat(paste0('to\n', glue_collapse(tbl$to, sep="\n")), file = tmp)
+  cat(paste0('to,from\n', paste0('"', tbl$to, '","', tbl$from, '"', collapse='\n')), file = tmp)
 
   # Copy the data into the docker container
   system(glue("docker cp {tmp} neocache_docker:/var/lib/neo4j/import/data.csv"))
@@ -18,68 +16,27 @@ docker_bulk_connect_friends <- function(tbl) {
   # Add a node for each of the root user's friends and connect the root user to them
   ## This query runs on joe50k in ~2.75 minutes
   connect_qry <- glue("LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row ",
-                     "MATCH (to:User {{user_id:'{tbl$from[1]}'}}) CREATE (from:User {{user_id:row.to}}) CREATE (from)-[:FOLLOWS]->(to)")
+                      "MATCH (to:User {{user_id:row.to}}) MATCH (from:User {{user_id:row.from}}) CREATE (from)-[:FOLLOWS]->(to)")
+  sup4j(connect_qry)
 
-  print(sup4j(connect_qry))
-  print("Connections done.")
+  file.remove(tmp)
+
+  tbl
+}
+
+
+#' Merges a batch of nodes to the graph with nothing but user_id's
+docker_bulk_merge_users <- function(user_ids) {
+  tmp <- tempfile()
+
+  cat(paste0('user_id\n', paste0('"', user_ids, '"', collapse='\n')), file = tmp)
+  system(glue("docker cp {tmp} neocache_docker:/var/lib/neo4j/import/data.csv"))
+
+  add_qry <- glue("LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row MERGE (n:User {{user_id:row.user_id}})")
+  sup4j(add_qry)
 
   file.remove(tmp)
 }
-
-
-#' Gets the friends for the given user_id and creates the edges in the graph.
-#' This function is only ever called by add_new_friends.
-#'
-#' @param user_ids user_ids who are already in the database and
-#' do not have friend edge data
-#'
-#' @return a nx2 tibble where the <from> column is user_id and the <to> column
-#' is the user_id of user_id's friends
-db_connect_friends <- function(user_ids, n) {
-
-  con <- get_connexion()
-
-  friends <- empty_user_edges()
-  for(user_id in user_ids) {
-    friends <- friends %>%
-      bind_rows(from=user_id, to=rtweet::get_friends(user_id, n = n))
-  }
-  results <- docker_bulk_connect(friends)
-
-
-  # OLD, SLOW IMPLEMENTATION
-  #
-  # to_ret <- empty_user_edges()
-  # for (user_id in user_ids) {
-  #   friends <- rtweet::get_friends(user_id, n = n)
-  #   sup4j(
-  #     glue('MATCH (n:User {{user_id:"{user_id}"}}) SET n.sampled_friends_at="{Sys.time()}"'),
-  #     con
-  #   )
-  #
-  #   results <- NULL
-  #   for (user in friends$user_id) {
-  #     # TODO: Improve this CYPHER query, there should be a way to create all of the edges at once
-  #     temp <- sup4j(
-  #       glue('MERGE (from:User {{user_id:"{user_id}"}}) MERGE (to:User {{user_id:"{user}"}}) ',
-  #             'MERGE (from)-[r:FOLLOWS]->(to)'
-  #       ),
-  #       con
-  #     )
-  #     results <- results %>%
-  #       bind_rows(tibble(from = user_id, to = user))
-  #   }
-  #
-  #   if (length(results) == 2) {
-  #     # If length(results) == 2 then the user existed and everything worked properly
-  #     to_ret <- to_ret %>%
-  #       bind_rows(tibble(from = user_id, to = friends$user_id))
-  #   }
-  # }
-  #
-  # to_ret
-}
-
 
 
 #' Gets the friends for the given user that already exist in the DB.
@@ -123,25 +80,29 @@ get_friends <- function(user_ids, n = 150) {
 
 
   # sample the friends of all the users w/o sampled friends
-  new_edges <- add_new_friends(status$not_in_graph, n)
-  upgraded_edges <- add_new_friends(status$sampled_friends_at_is_null, n)
+  new_edges <- merge_then_fetch_connect_friends(status$not_in_graph, n)
+  upgraded_edges <- merge_then_fetch_connect_friends(status$sampled_friends_at_is_null, n)
   existing_edges <- db_get_friends(status$sampled_friends_at_not_null)
 
   # need to be careful about duplicate edges here. ideally
   # we guarantee that edges are unique somehow before this, but if not
   # we can use dplyr::distinct(), although this is an expensive operation
 
-  # TODO: I believe that these edges should all be duplicate free, but this
-  #       needs to be verified
   bind_rows(new_edges, upgraded_edges, existing_edges)
 }
 
 
+#' user_ids is a list of COMPLETELY NEW users. This function performs the following:
+#'   1. Fetch the friends of each user (call these main users) listed in user_ids (call these blank friends)
+#'   2. MERGE nodes for main users and blank friends (each of these nodes will only contain a user_id field)
+#'   3. Create edges between main users and their respective blank friends
+#'   4. Set the sampled_friends_at property for nodes that were sampled
+#'
 #' @param user_ids a list of user_ids to add friend edges to the db for
 #' @param n how many friends to sample at a time for each user
 #'
 #' @return a 2-column tibble edge list from user_ids to their friends
-add_new_friends <- function(user_ids, n) {
+merge_then_fetch_connect_friends <- function(user_ids, n) {
   # set sampled_friends_at to Sys.time()
   # sampled_at and sampled_followers_at default to NULL
   # return friends of each user
@@ -151,9 +112,31 @@ add_new_friends <- function(user_ids, n) {
     return(empty_user_edges())
   }
 
-  # Add the users to the graph, then give them edge data
-  merge_users(user_ids, lookup = FALSE)
-  db_connect_friends(user_ids, n = n)
+  ### 1.
+  sample_time <- Sys.time()
+  edge_list <- fetch_friends(user_ids, n = n)
+
+  ### 2.
+  docker_bulk_merge_users(c(user_ids, edge_list$to))
+
+  ### 3.
+  return_val <- docker_bulk_connect_friends(edge_list)
+
+  ### 4.
+  update_qry <- glue('WITH ["', glue_collapse(user_ids, sep='","'), '"] AS user_ids UNWIND user_ids AS id ',
+                     'MATCH (n:User {{user_id:id}}) SET n.sampled_friends_at = "{sample_time}"')
+  sup4j(update_qry)
+
+  return_val
+}
+
+
+#' @return an nx2 tibble edge list
+fetch_friends <- function(user_ids, n) {
+  print("FETCH FRIENDS CALLED")
+
+  rtweet::get_friends(user_ids, n = n) %>%
+   rename(from=user, to=user_id)
 }
 
 
