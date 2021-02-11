@@ -1,3 +1,6 @@
+# TODO (IMPORTANT): Update the docker container to have apoc pre-installed
+# Also have to have neo4j.conf have apoc.export.file.enabled=true
+
 #' Title
 #'
 #' @return TODO
@@ -20,6 +23,7 @@ get_connexion <- function() {
   con
 }
 
+
 #' Title
 #' TODO: Add docs
 start_neo4j <- function() {
@@ -33,6 +37,7 @@ start_neo4j <- function() {
   }
 }
 
+
 #' Title
 #' TODO: Add docs
 stop_neo4j <- function() {
@@ -40,6 +45,7 @@ stop_neo4j <- function() {
     warning("Error returned when attempting to stop docker container.")
   }
 }
+
 
 #' TODO: Add docs
 #'
@@ -52,8 +58,6 @@ stop_neo4j <- function() {
 sup4j <- function(query, con = get_connexion()) {
   suppressMessages(call_neo4j(query, con))
 }
-
-
 
 
 #' This function only creates edges between nodes according to the supplied tbl.
@@ -105,22 +109,27 @@ docker_bulk_merge_users <- function(user_ids) {
 #' @return a 2-column tibble edge list with entries from the users in user_ids
 #' to their friends
 db_get_friends <- function(user_ids) {
-
   con <- get_connexion()
 
-  results <- sup4j(
-    glue('MATCH (from:User),(to:User) WHERE from.user_id in ["',
-         glue_collapse(user_ids, sep = '","'),
-         '"] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id',
-    ),
+  sup4j(
+    paste0('WITH "MATCH (from:User),(to:User) WHERE from.user_id in [\\\'',
+            glue_collapse(user_ids, sep = "\\',\\'"),
+            '\\\'] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id" AS query ',
+            'CALL apoc.export.csv.query(query, "get_friends.csv", {}) YIELD file RETURN file'),
     con
   )
+
+  tmp <- tempfile()
+  system(glue("docker cp neocache_docker:/var/lib/neo4j/import/get_friends.csv {tmp}"))
+  results <- readr::read_csv(tmp, col_types = readr::cols(from.user_id=readr::col_character(), to.user_id=readr::col_character()))
+  file.remove(tmp)
+
 
   if (length(results) != 2) {
     return(empty_user_edges())
   }
 
-  tibble(from = results$from.user_id$value, to = results$to.user_id$value)
+  tibble(from = results$from.user_id, to = results$to.user_id)
 }
 
 
@@ -132,24 +141,43 @@ db_get_friends <- function(user_ids) {
 #' @return a 2-column tibble edge list with entries from the users in user_ids
 #' to their followers
 db_get_followers <- function(user_ids) {
-
   con <- get_connexion()
 
-  # TODO: This cypher query needs to be made faster by matching based on each
-  #       user ID individually instead of using `WHERE from.user_id in [...]`
-  results <- sup4j(
-    glue('MATCH (from:User),(to:User) WHERE to.user_id in ["',
-         glue_collapse(user_ids, sep = '","'),
-         '"] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id',
-    ),
+  sup4j(
+    paste0('WITH "MATCH (from:User),(to:User) WHERE to.user_id in [\\\'',
+           glue_collapse(user_ids, sep = "\\',\\'"),
+           '\\\'] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id" AS query ',
+           'CALL apoc.export.csv.query(query, "get_friends.csv", {}) YIELD file RETURN file'),
     con
   )
+
+  tmp <- tempfile()
+  system(glue("docker cp neocache_docker:/var/lib/neo4j/import/get_friends.csv {tmp}"))
+  results <- readr::read_csv(tmp, col_types = readr::cols(from.user_id=readr::col_character(), to.user_id=readr::col_character()))
+  file.remove(tmp)
 
   if (length(results) != 2) {
     return(empty_user_edges())
   }
 
-  tibble(from = results$from.user_id$value, to = results$to.user_id$value)
+  tibble(from = results$from.user_id, to = results$to.user_id)
+}
+
+
+db_get_x_speedtest <- function() {
+  user_ids <- c("1319331638497640449", "3321897342", "478015213", "1191642560", "1099419521654222848", "866697062",
+                "1434455250", "489535347", "29472053", "755024353708892160", "1077339504", "17214479")
+  tictoc::tic()
+  res <- db_get_friends(user_ids)
+  tictoc::toc()
+
+  res
+
+  # Time to complete with the following query is 3.72 seconds:
+  #  glue('MATCH (from:User),(to:User) WHERE from.user_id in ["',
+  #       glue_collapse(user_ids, sep = '","'),
+  #       '"] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id',
+  #  )
 }
 
 
