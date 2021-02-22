@@ -1,24 +1,14 @@
-# TODO (IMPORTANT): Update the docker container to have apoc pre-installed
-# Also have to have neo4j.conf have apoc.export.file.enabled=true
-
 #' Title
 #'
 #' @return TODO
 #' @export
 #'
 get_connexion <- function() {
-
-  # model on gargle_auth / rtweet::get_token() roughly
-
   con <- neo4j_api$new(
     url = "http://localhost:7474",
     user = "neo4j",
     password = "pass"
   )
-
-  if (!(con$ping() == 200)) {
-    warning("Database connection not established.")
-  }
 
   con
 }
@@ -27,22 +17,49 @@ get_connexion <- function() {
 #' Title
 #' TODO: Add docs
 start_neo4j <- function() {
+  message("Checking the status of Docker...")
+  # Check if Docker is running
+  if(system("docker system info", ignore.stdout = TRUE, ignore.stderr = TRUE) != 0) {
+    warning("Docker does not appear to be running. Please start Docker and try again.")
+    return(invisible())
+  }
+  message("Docker seems to be running.\n")
+
+  message("Attempting to start Neocache container...")
   # Start the Docker container
   # First try to run the existing Docker container
-  if(system("docker start neocache_docker") == 1) {
+  if(system("docker start neocache_docker", ignore.stdout = TRUE, ignore.stderr = TRUE) != 0) {
     # Container does not exist, create the container
-    if(system("docker run --name neocache_docker -p7474:7474 -p7687:7687 -d --env NEO4J_AUTH=neo4j/pass neo4j:3.5.21") != 0) {
+    if(system("docker run --name neocache_docker -p7474:7474 -p7687:7687 -d -e NEO4J_AUTH=neo4j/pass -e NEO4J_apoc_export_file_enabled=true -e NEO4J_apoc_import_file_enabled=true -e NEO4J_apoc_import_file_use__neo4j__config=true -e NEO4JLABS_PLUGINS=[\\\"apoc\\\"] neo4j:3.5.21",
+              ignore.stdout = TRUE) != 0) {
       warning("Failed to initiate docker container.")
+      return(invisible())
     }
   }
+
+  message("Neocache container successfully launched.\n",
+          "\nWaiting for Neo4j to come online, this may take a while...")
+  # Now we wait for Neo4j to finish starting up
+  con <- get_connexion()
+  while(TRUE) {
+    Sys.sleep(12)
+    tryCatch({
+      if(con$ping() == 200) {
+        break
+      }
+    }, error = function(e) {}, condition = function(e) {})
+  }
+  message("Neo4j successfully started.")
 }
 
 
 #' Title
 #' TODO: Add docs
 stop_neo4j <- function() {
-  if(system("docker stop neocache_docker") == 1) {
+  if(system("docker stop neocache_docker", ignore.stdout = TRUE) != 0) {
     warning("Error returned when attempting to stop docker container.")
+  } else {
+    message("Successfully shut down Neo4j and the Neocache Docker container.")
   }
 }
 
