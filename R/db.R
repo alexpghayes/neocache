@@ -20,8 +20,7 @@ start_neo4j <- function() {
   message("Checking the status of Docker...")
   # Check if Docker is running
   if(system("docker system info", ignore.stdout = TRUE, ignore.stderr = TRUE) != 0) {
-    warning("Docker does not appear to be running. Please start Docker and try again.")
-    return(invisible())
+    stop("Docker does not appear to be running. Please start Docker and try again.")
   }
   message("Docker seems to be running.\n")
 
@@ -32,8 +31,7 @@ start_neo4j <- function() {
     # Container does not exist, create the container
     if(system("docker run --name neocache_docker -p7474:7474 -p7687:7687 -d -e NEO4J_AUTH=neo4j/pass -e NEO4J_apoc_export_file_enabled=true -e NEO4J_apoc_import_file_enabled=true -e NEO4J_apoc_import_file_use__neo4j__config=true -e NEO4JLABS_PLUGINS=[\\\"apoc\\\"] neo4j:3.5.21",
               ignore.stdout = TRUE) != 0) {
-      warning("Failed to initiate docker container.")
-      return(invisible())
+      stop("Failed to initiate docker container.")
     }
   }
 
