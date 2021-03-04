@@ -1,6 +1,8 @@
-
-#' @param users A character vector of user ids (never screen names)
+#' Looks up information pertaining to a vector of provided users.  Fetches cached
+#' data for users who have already been looked up, and fetches new data for users
+#' who have not bee looked up yet.
 #'
+#' @param users A character vector of user ids (never screen names)
 #' @return A tibble where each row corresponds to a User and each column
 #' to one of the User properties. If a user cannot be sampled, should
 #' return nothing for that user. If no users can be sampled, should
@@ -85,9 +87,10 @@ fetch_lookup <- function(user_ids) {
 }
 
 
+#' Looks up users that are already in the database.
+#'
 #' @param user_ids list of user_ids to fetch existing lookup_user data for in
 #' the db
-#'
 #' @return a tibble with any existing data for user_ids
 db_lookup_users <- function(user_ids) {
 
@@ -111,89 +114,4 @@ db_lookup_users <- function(user_ids) {
 
   user_data[[1]] %>%
     bind_rows(empty_lookup())
-}
-
-
-
-
-
-
-#' TODO: Rename this function. This function is used both to update present users
-#' and add new users to the db.
-#'
-#' @param user_ids the user_ids to update
-#' @param lookup should new Twitter profile data be updated for each user_id?
-#' @param n how many friends/followers should be looked up at a time if
-#' the respective argument is set to TRUE?
-#'
-#' @return The tibble of user data, with one row for each (accessible)
-#' user in `users` and one column for each property of `User` nodes
-#' in the graph database.
-add_users_data <- function(user_ids, lookup, n = 150) {
-
-  con <- get_connexion()
-
-  # make sure to set sampled_at to Sys.time() and
-  # sampled_friends_at and sampled_followers_at to NULL
-  # return data on users
-  if (length(user_ids) == 0) {
-    return(empty_lookup())
-  }
-
-  if (lookup) {
-    user_info <- rtweet::lookup_users(user_ids)
-  } else {
-    user_info <- empty_lookup() %>%
-      bind_rows(tibble(user_id = user_ids))
-  }
-
-  if (length(user_info) == 0) {
-    return(empty_lookup())
-  }
-
-  # NATHAN: look into the following approach
-  # https://neo4j-rstats.github.io/user-guide/send.html#transform-elements-to-cypher-queries
-
-  # the current approach you are taking very incrementally grows a
-  # character vector and seems not ideal to me
-  #
-  # don't forget about setting sampled_at
-
-  query <- user_info %>%
-    select(USER_DATA_PROPERTIES) %>%
-    vec_to_cypher("User")
-
-  sup4j(paste("MERGE", query))
-
-  nodes <- empty_lookup()
-  for (i in seq(1, nrow(user_info))) {
-    info <- user_info[i, ]
-    create_node <- glue('MERGE (n:User {{user_id:"{info$user_id}"}}) ',
-                        'SET n.sampled_at={if(lookup) Sys.time() else NULL},')
-
-    # Adds each property to to the Neo4j CYPHER query
-    for (j in seq(1, length(USER_DATA_PROPERTIES))) {
-      property_data <- info[[USER_DATA_PROPERTIES[j]]]
-      if (is.na(property_data)) {
-        next
-      }
-
-      if (class(property_data) == "character") {
-        create_node <- glue('{create_node} n.{USER_DATA_PROPERTIES[j]}="{property_data}",')
-      } else {
-        create_node <- glue('{create_node} n.{USER_DATA_PROPERTIES[j]}={property_data}",')
-      }
-    }
-
-    browser()
-
-    new_node <- glue('{substr(create_node, 1, nchar(create_node) - 1} RETURN n') %>%
-      sup4j(con)
-
-    if (length(new_node) != 0) {
-      nodes <- bind_rows(nodes, new_node$n)
-    }
-  }
-
-  nodes
 }

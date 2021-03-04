@@ -1,8 +1,6 @@
-#' Title
+#' Get the connexion object that facilitates access to the Neo4j database
 #'
-#' @return TODO
-#' @export
-#'
+#' @return connexion object
 get_connexion <- function() {
   con <- neo4j_api$new(
     url = "http://localhost:7474",
@@ -14,8 +12,8 @@ get_connexion <- function() {
 }
 
 
-#' Title
-#' TODO: Add docs
+#' Starts the Neo4j Docker container; creates and sets up the container if it
+#' does not already exist.
 start_neo4j <- function() {
   message("Checking the status of Docker...")
   # Check if Docker is running
@@ -51,8 +49,7 @@ start_neo4j <- function() {
 }
 
 
-#' Title
-#' TODO: Add docs
+#' Stops the Neo4j Docker container.
 stop_neo4j <- function() {
   if(system("docker stop neocache_docker", ignore.stdout = TRUE) != 0) {
     warning("Error returned when attempting to stop docker container.")
@@ -62,7 +59,8 @@ stop_neo4j <- function() {
 }
 
 
-#' TODO: Add docs
+#' Sends CYPHER queries to a given connexion object while suppressing output
+#' messages that call_neo4j throws.
 #'
 #' @param query the CYPHER query to be passed to call_neo4j
 #' @param con the neo4j connection object to be passed to call_neo4j
@@ -75,11 +73,11 @@ sup4j <- function(query, con = get_connexion()) {
 }
 
 
-#' This function only creates edges between nodes according to the supplied tbl.
-#' Node creation must happen BEFORE this function is called.
+#' This function creates edges en masse between all the nodes provided in the
+#' tbl argument.
 #'
-#' @param tbl tibble containing columns for 'to' and 'from'
-#' TODO: add docs
+#' @param tbl tibble containing columns for 'to' and 'from' consisting of user_ids
+#' @return the same tibble edge list that was provided as an argument
 docker_bulk_connect_nodes <- function(tbl) {
   # Create temp file to write the data into
   tmp <- tempfile()
@@ -103,6 +101,8 @@ docker_bulk_connect_nodes <- function(tbl) {
 
 
 #' Merges a batch of nodes to the graph with nothing but user_id's
+#'
+#' @param user_ids a vector of user_ids to generate MERGE queries for
 docker_bulk_merge_users <- function(user_ids) {
   tmp <- tempfile()
 
@@ -176,23 +176,6 @@ db_get_followers <- function(user_ids) {
   }
 
   tibble(from = results$from.user_id, to = results$to.user_id)
-}
-
-
-db_get_x_speedtest <- function() {
-  user_ids <- c("1319331638497640449", "3321897342", "478015213", "1191642560", "1099419521654222848", "866697062",
-                "1434455250", "489535347", "29472053", "755024353708892160", "1077339504", "17214479")
-  tictoc::tic()
-  res <- db_get_friends(user_ids)
-  tictoc::toc()
-
-  res
-
-  # Time to complete with the following query is 3.72 seconds:
-  #  glue('MATCH (from:User),(to:User) WHERE from.user_id in ["',
-  #       glue_collapse(user_ids, sep = '","'),
-  #       '"] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id',
-  #  )
 }
 
 

@@ -62,6 +62,9 @@ merge_then_fetch_connect_friends <- function(user_ids, n) {
 }
 
 
+#' Uses rtweet to fetch the friend list of the users provided in user_ids
+#'
+#' @param user_ids a vector of user ids
 #' @return an nx2 tibble edge list
 fetch_friends <- function(user_ids, n) {
   print("FETCH FRIENDS CALLED")
@@ -101,61 +104,3 @@ friend_sampling_status <- function(user_ids) {
     sampled_friends_at_not_null = sampled_users
   )
 }
-
-
-
-#' Tests how quickly the current implementation can add 50,000 nodes to the graphs
-#' and connect each of these nodes to one other root node.
-speedtest <- function() {
-  if(!exists("joe")) {
-    joe <- rtweet::get_followers("joebiden", n="all")$user_id
-  }
-
-  start_neo4j()
-  clear____db()
-  con <- get_connexion()
-
-  # Old, much slower method that strictly uses neo4r:
-  #
-  # tictoc::tic()
-  # results <- NULL
-  # # Current implementation, from lines 23-30
-  # for (user in joe[1:250]) {
-  #   # TODO: Improve this CYPHER query, there should be a way to create all of the edges at once
-  #   temp <- sup4j(
-  #     glue('MERGE (from:User {{user_id:"{user_id}"}}) MERGE (to:User {{user_id:"{user}"}}) ',
-  #          'MERGE (from)-[r:FOLLOWS]->(to)'
-  #     ),
-  #     con
-  #   )
-  #   results <- results %>%
-  #     bind_rows(tibble(from = user_id, to = user))
-  # }
-  # tictoc::toc() # takes ~15 seconds to add 250 nodes to the Neo4J graph
-
-
-  tictoc::tic()
-
-  tbl <- bind_cols(joe, from='0') %>% rename(to=user_id)
-  docker_bulk_connect_nodes(tbl)
-
-  tictoc::toc() # takes 1-2 seconds to do 75,000 entries with Docker
-
-  print(glue("Total nodes in graph: {sup4j('MATCH (n) RETURN COUNT(n)')[[1]]$value[1]}"))
-  print(glue("Total edges in graph: {sup4j('MATCH ()-[r]->() RETURN COUNT(r)')[[1]]$value[1]}\n"))
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
