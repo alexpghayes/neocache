@@ -35,12 +35,7 @@ lookup_users <- function(user_ids) {
 #' @param user_ids a vector of user_ids
 #' @return tibble of user data
 fetch_lookup_update <- function(user_ids) {
-  properties <- c(
-    "screen_name", "protected", "followers_count", "friends_count",
-    "listed_count", "statuses_count", "favourites_count", "account_created_at", "verified", "profile_url",
-    "profile_expanded_url", "account_lang", "profile_banner_url", "profile_background_url", "profile_image_url",
-    "name", "location", "description", "url"
-  )
+
   set_string <- "SET n.sampled_at=row.sampled_at SET n.screen_name=row.screen_name SET n.protected=toBoolean(row.protected) SET n.followers_count=toInteger(row.followers_count) SET n.friends_count=toInteger(row.friends_count) SET n.listed_count=toInteger(row.listed_count) SET n.statuses_count=toInteger(row.statuses_count) SET n.favourites_count=toInteger(row.favourites_count) SET n.account_created_at=toInteger(row.account_created_at) SET n.verified=toBoolean(row.verified) SET n.profile_url=row.profile_url SET n.profile_expanded_url=row.profile_expanded_url SET n.account_lang=row.account_lang SET n.profile_banner_url=row.profile_banner_url SET n.profile_background_url=row.profile_background_url SET n.profile_image_url=row.profile_image_url SET n.name=row.name SET n.location=row.location SET n.description=row.description SET n.url=row.url"
 
   user_info <- fetch_lookup(user_ids)[properties] %>%

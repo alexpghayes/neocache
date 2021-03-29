@@ -50,7 +50,8 @@ merge_then_fetch_connect_friends <- function(user_ids, n) {
 
   ### 1.
   sample_time <- Sys.time()
-  edge_list <- fetch_friends(user_ids, n = n)
+  edge_list <- get_friends(user_ids, n = n) %>%
+    rename(from = user, to = user_id)
 
   ### 2.
   docker_bulk_merge_users(c(user_ids, edge_list$to))
@@ -67,20 +68,6 @@ merge_then_fetch_connect_friends <- function(user_ids, n) {
 
   return_val
 }
-
-
-#' Uses rtweet to fetch the friend list of the users provided in user_ids
-#'
-#' @param user_ids a vector of user ids
-#' @return an nx2 tibble edge list
-#'
-#' @importFrom rtweet get_friends
-#' @importFrom dplyr rename
-fetch_friends <- function(user_ids, n) {
-  get_friends(user_ids, n = n) %>%
-    rename(from = user, to = user_id)
-}
-
 
 #' Checks whether friend data has already been sampled for the provided
 #' vector of users.
