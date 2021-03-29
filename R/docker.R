@@ -24,13 +24,15 @@ create_neocache_docker <- function() {
 
 stop_neocache_docker <- function() {
   code <- system("docker stop neocache_docker", ignore.stdout = TRUE)
-  succes(code)
+  success(code)
 }
 
 copy_csv_to_docker <- function(path) {
-  system(glue("docker cp {path} neocache_docker:/var/lib/neo4j/import/data.csv"))
+  code <- system(glue("docker cp {path} neocache_docker:/var/lib/neo4j/import/data.csv"))
+  success(code)
 }
 
 pull_friend_data_from_docker <- function(path) {
-  system(glue("docker cp neocache_docker:/var/lib/neo4j/import/get_friends.csv {tmp}"))
+  code <- system(glue("docker cp neocache_docker:/var/lib/neo4j/import/get_friends.csv {tmp}"))
+  success(code)
 }
