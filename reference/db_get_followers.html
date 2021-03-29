@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>HELPER FUNCTION USED TO CLEAR THE DATABASE FOR TESTING,
-REMOVE THIS FUNCTION ONCE TESTING IS DONE — clear____db • neocache</title>
+<title>Gets the followers for the given user that already exist in the DB. — db_get_followers • neocache</title>
 
 
 <!-- jquery -->
@@ -40,10 +39,8 @@ REMOVE THIS FUNCTION ONCE TESTING IS DONE — clear____db • neocache</title>
 
 
 
-<meta property="og:title" content="HELPER FUNCTION USED TO CLEAR THE DATABASE FOR TESTING,
-REMOVE THIS FUNCTION ONCE TESTING IS DONE — clear____db" />
-<meta property="og:description" content="HELPER FUNCTION USED TO CLEAR THE DATABASE FOR TESTING,
-REMOVE THIS FUNCTION ONCE TESTING IS DONE" />
+<meta property="og:title" content="Gets the followers for the given user that already exist in the DB. — db_get_followers" />
+<meta property="og:description" content="Gets the followers for the given user that already exist in the DB." />
 
 
 
@@ -111,20 +108,31 @@ REMOVE THIS FUNCTION ONCE TESTING IS DONE" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>HELPER FUNCTION USED TO CLEAR THE DATABASE FOR TESTING,
-REMOVE THIS FUNCTION ONCE TESTING IS DONE</h1>
-    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/testing.R'><code>R/testing.R</code></a></small>
-    <div class="hidden name"><code>clear____db.Rd</code></div>
+    <h1>Gets the followers for the given user that already exist in the DB.</h1>
+    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/db.R'><code>R/db.R</code></a></small>
+    <div class="hidden name"><code>db_get_followers.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>HELPER FUNCTION USED TO CLEAR THE DATABASE FOR TESTING,
-REMOVE THIS FUNCTION ONCE TESTING IS DONE</p>
+    <p>Gets the followers for the given user that already exist in the DB.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>clear____db</span><span class='op'>(</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>db_get_followers</span><span class='op'>(</span><span class='va'>user_ids</span><span class='op'>)</span></pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>user_ids</th>
+      <td><p>a list of user_ids who are already in the DB and
+already have follower edge data</p></td>
+    </tr>
+    </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>a 2-column tibble edge list with entries from the users in user_ids
+to their followers</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

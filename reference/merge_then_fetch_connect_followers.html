@@ -6,8 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>HELPER FUNCTION USED TO CLEAR THE DATABASE FOR TESTING,
-REMOVE THIS FUNCTION ONCE TESTING IS DONE — clear____db • neocache</title>
+<title>user_ids is a list of COMPLETELY NEW users. This function performs the following:
+
+Fetch the followers of each user (call these main users) listed in user_ids (call these blank followers)
+MERGE nodes for main users and blank followers (each of these nodes will only contain a user_id field)
+Create edges between main users and their respective blank followers
+Set the sampled_followers_at property for nodes that were sampled
+ — merge_then_fetch_connect_followers • neocache</title>
 
 
 <!-- jquery -->
@@ -40,10 +45,20 @@ REMOVE THIS FUNCTION ONCE TESTING IS DONE — clear____db • neocache</title>
 
 
 
-<meta property="og:title" content="HELPER FUNCTION USED TO CLEAR THE DATABASE FOR TESTING,
-REMOVE THIS FUNCTION ONCE TESTING IS DONE — clear____db" />
-<meta property="og:description" content="HELPER FUNCTION USED TO CLEAR THE DATABASE FOR TESTING,
-REMOVE THIS FUNCTION ONCE TESTING IS DONE" />
+<meta property="og:title" content="user_ids is a list of COMPLETELY NEW users. This function performs the following:
+
+Fetch the followers of each user (call these main users) listed in user_ids (call these blank followers)
+MERGE nodes for main users and blank followers (each of these nodes will only contain a user_id field)
+Create edges between main users and their respective blank followers
+Set the sampled_followers_at property for nodes that were sampled
+ — merge_then_fetch_connect_followers" />
+<meta property="og:description" content="user_ids is a list of COMPLETELY NEW users. This function performs the following:
+Fetch the followers of each user (call these main users) listed in user_ids (call these blank followers)
+MERGE nodes for main users and blank followers (each of these nodes will only contain a user_id field)
+Create edges between main users and their respective blank followers
+Set the sampled_followers_at property for nodes that were sampled
+
+" />
 
 
 
@@ -111,20 +126,45 @@ REMOVE THIS FUNCTION ONCE TESTING IS DONE" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>HELPER FUNCTION USED TO CLEAR THE DATABASE FOR TESTING,
-REMOVE THIS FUNCTION ONCE TESTING IS DONE</h1>
-    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/testing.R'><code>R/testing.R</code></a></small>
-    <div class="hidden name"><code>clear____db.Rd</code></div>
+    <h1>user_ids is a list of COMPLETELY NEW users. This function performs the following:
+<ol>
+<li><p>Fetch the followers of each user (call these main users) listed in user_ids (call these blank followers)</p></li>
+<li><p>MERGE nodes for main users and blank followers (each of these nodes will only contain a user_id field)</p></li>
+<li><p>Create edges between main users and their respective blank followers</p></li>
+<li><p>Set the sampled_followers_at property for nodes that were sampled</p></li>
+</ol></h1>
+    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/get_followers.R'><code>R/get_followers.R</code></a></small>
+    <div class="hidden name"><code>merge_then_fetch_connect_followers.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>HELPER FUNCTION USED TO CLEAR THE DATABASE FOR TESTING,
-REMOVE THIS FUNCTION ONCE TESTING IS DONE</p>
+    <p>user_ids is a list of COMPLETELY NEW users. This function performs the following:</p><ol>
+<li><p>Fetch the followers of each user (call these main users) listed in user_ids (call these blank followers)</p></li>
+<li><p>MERGE nodes for main users and blank followers (each of these nodes will only contain a user_id field)</p></li>
+<li><p>Create edges between main users and their respective blank followers</p></li>
+<li><p>Set the sampled_followers_at property for nodes that were sampled</p></li>
+</ol>
+
     </div>
 
-    <pre class="usage"><span class='fu'>clear____db</span><span class='op'>(</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>merge_then_fetch_connect_followers</span><span class='op'>(</span><span class='va'>user_ids</span>, <span class='va'>n</span><span class='op'>)</span></pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>user_ids</th>
+      <td><p>a list of user_ids to add follower edges to the db for</p></td>
+    </tr>
+    <tr>
+      <th>n</th>
+      <td><p>how many followers to sample at a time for each user</p></td>
+    </tr>
+    </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>a 2-column tibble edge list from user_ids to their followers</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
