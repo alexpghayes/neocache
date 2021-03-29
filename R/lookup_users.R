@@ -15,12 +15,12 @@ lookup_users <- function(user_ids) {
   not_in_graph_ids <- setdiff(user_ids, user_data$user_id)
   not_sampled_ids <- filter(user_data, is.na(sampled_at))$user_id
 
-  if(length(not_sampled_ids) != 0) {
+  if (length(not_sampled_ids) != 0) {
     upgraded_user_data <- fetch_lookup_update(not_sampled_ids)
   } else {
     upgraded_user_data <- empty_lookup()
   }
-  if(length(not_in_graph_ids) != 0) {
+  if (length(not_in_graph_ids) != 0) {
     new_user_data <- merge_fetch_lookup_update(not_in_graph_ids)
   } else {
     new_user_data <- empty_lookup()
@@ -45,7 +45,7 @@ fetch_lookup_update <- function(user_ids) {
 
   user_info <- fetch_lookup(user_ids)[properties] %>%
     bind_cols(sampled_at = as.character(Sys.time())) %>%
-    bind_cols(tibble(user_id=user_ids))
+    bind_cols(tibble(user_id = user_ids))
   user_info$account_created_at <- as.character(user_info$account_created_at)
 
   tmp <- tempfile()
@@ -54,8 +54,10 @@ fetch_lookup_update <- function(user_ids) {
   file.remove(tmp)
 
   res <- sup4j(
-    glue("LOAD CSV WITH HEADERS FROM 'file:///lookup.csv' AS row MATCH (n:User {{user_id:row.user_id}}) ",
-         "{set_string} RETURN n.user_id"),
+    glue(
+      "LOAD CSV WITH HEADERS FROM 'file:///lookup.csv' AS row MATCH (n:User {{user_id:row.user_id}}) ",
+      "{set_string} RETURN n.user_id"
+    ),
     get_connexion()
   )
 
@@ -81,8 +83,9 @@ merge_fetch_lookup_update <- function(user_ids) {
 fetch_lookup <- function(user_ids) {
   print("FETCH LOOKUP CALLED")
 
-  if(length(user_ids) == 0)
+  if (length(user_ids) == 0) {
     return(empty_lookup())
+  }
 
   rtweet::lookup_users(user_ids)
 }
@@ -94,7 +97,6 @@ fetch_lookup <- function(user_ids) {
 #' the db
 #' @return a tibble with any existing data for user_ids
 db_lookup_users <- function(user_ids) {
-
   con <- get_connexion()
 
   # return a tibble where each row corresponds to a User and each column

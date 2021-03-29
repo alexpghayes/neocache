@@ -59,8 +59,10 @@ merge_then_fetch_connect_friends <- function(user_ids, n) {
   return_val <- docker_bulk_connect_nodes(edge_list)
 
   ### 4.
-  update_qry <- glue('WITH ["', glue_collapse(user_ids, sep='","'), '"] AS user_ids UNWIND user_ids AS id ',
-                     'MATCH (n:User {{user_id:id}}) SET n.sampled_friends_at = "{sample_time}"')
+  update_qry <- glue(
+    'WITH ["', glue_collapse(user_ids, sep = '","'), '"] AS user_ids UNWIND user_ids AS id ',
+    'MATCH (n:User {{user_id:id}}) SET n.sampled_friends_at = "{sample_time}"'
+  )
   sup4j(update_qry)
 
   return_val
@@ -76,7 +78,7 @@ merge_then_fetch_connect_friends <- function(user_ids, n) {
 #' @importFrom dplyr rename
 fetch_friends <- function(user_ids, n) {
   get_friends(user_ids, n = n) %>%
-   rename(from=user, to=user_id)
+    rename(from = user, to = user_id)
 }
 
 

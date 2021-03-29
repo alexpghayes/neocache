@@ -60,8 +60,10 @@ merge_then_fetch_connect_followers <- function(user_ids, n) {
   return_val <- docker_bulk_connect_nodes(edge_list)
 
   ### 4.
-  update_qry <- glue('WITH ["', glue_collapse(user_ids, sep='","'), '"] AS user_ids UNWIND user_ids AS id ',
-                     'MATCH (n:User {{user_id:id}}) SET n.sampled_followers_at = "{sample_time}"')
+  update_qry <- glue(
+    'WITH ["', glue_collapse(user_ids, sep = '","'), '"] AS user_ids UNWIND user_ids AS id ',
+    'MATCH (n:User {{user_id:id}}) SET n.sampled_followers_at = "{sample_time}"'
+  )
   sup4j(update_qry)
 
   return_val
@@ -75,10 +77,10 @@ merge_then_fetch_connect_followers <- function(user_ids, n) {
 #' @importFrom rtweet get_followers
 fetch_followers <- function(user_ids, n) {
   final <- empty_user_edges()
-  for(to_id in user_ids) {
+  for (to_id in user_ids) {
     final <- get_followers(to_id, n = n) %>%
-      rename(from=user_id) %>%
-      bind_cols(to=to_id) %>%
+      rename(from = user_id) %>%
+      bind_cols(to = to_id) %>%
       bind_rows(final)
   }
   final
@@ -118,15 +120,3 @@ follower_sampling_status <- function(user_ids) {
     sampled_followers_at_not_null = sampled_users
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
