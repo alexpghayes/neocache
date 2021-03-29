@@ -2,7 +2,8 @@
 % Please edit documentation in R/db.R
 \name{sup4j}
 \alias{sup4j}
-\title{TODO}
+\title{Sends CYPHER queries to a given connexion object while suppressing output
+messages that call_neo4j throws.}
 \usage{
 sup4j(query, con = get_connexion())
 }
@@ -15,6 +16,7 @@ sup4j(query, con = get_connexion())
 the return value from call_neo4j
 }
 \description{
-TODO
+Sends CYPHER queries to a given connexion object while suppressing output
+messages that call_neo4j throws.
 }
 \keyword{internal}

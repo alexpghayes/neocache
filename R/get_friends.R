@@ -1,7 +1,12 @@
+#' Fetches the friends of each of the users contained in the user_ids vector.
+#' Returns the friend relationships via a tibble edge list.
+#'
 #' @param user_ids A character vector of user ids (never screen names)
 #'
 #' @return A tibble where each row corresponds to a follower relationship
 #' from the user in the 'from' column to the user in to 'to' column
+#'
+#' @export
 get_friends <- function(user_ids, n = 150) {
   # here we will need to query twice: once to ask who we actually
   # have *complete* friendship edges for, and then a second time to get
@@ -74,6 +79,9 @@ fetch_friends <- function(user_ids, n) {
 }
 
 
+#' Checks whether friend data has already been sampled for the provided
+#' vector of users.
+#'
 #' @param user_ids to fetch the sampling status for
 #'
 #' @return a list of all users who either (1) are not currently in the

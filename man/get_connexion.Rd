@@ -2,13 +2,13 @@
 % Please edit documentation in R/db.R
 \name{get_connexion}
 \alias{get_connexion}
-\title{Title}
+\title{Get the connexion object that facilitates access to the Neo4j database}
 \usage{
 get_connexion()
 }
 \value{
-TODO
+connexion object
 }
 \description{
-Title
+Get the connexion object that facilitates access to the Neo4j database
 }

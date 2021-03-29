@@ -1,9 +1,11 @@
-
+#' An empty version of the tibble returned by `rtweet`'s lookup_users
+#' fuctions. Used when binding with empty query results to avoid errors.
+#'
 #' @return an empty tibble with columns named after all of the lookup_user
 #' properties.  Used when user data is unavailable
 #'
 #' @keywords internal
-#'
+#' @name empty_lookup
 empty_lookup <- function() {
   tibble(
     user_id = character(0),
@@ -32,11 +34,14 @@ empty_lookup <- function() {
   )
 }
 
-
+#' An empty edge list, used when binding with empty query results to
+#' avoid errors.
+#'
 #' @return an empty 2-column tibble used as a placeholder for
 #' when user data is not available
 #'
 #' @keywords internal
+#' @name empty_user_edges
 empty_user_edges <- function() {
   tibble(
     from = character(0),

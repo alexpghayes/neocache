@@ -7,6 +7,7 @@
 #' to one of the User properties. If a user cannot be sampled, should
 #' return nothing for that user. If no users can be sampled, should
 #' return an empty tibble with appropriate columns.
+#' @export
 lookup_users <- function(user_ids) {
   user_data <- db_lookup_users(user_ids)
 

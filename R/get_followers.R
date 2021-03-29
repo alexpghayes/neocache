@@ -1,7 +1,13 @@
+#' Fetches the follows of all of the users in a provided vector. Returns
+#' the follower relationships in the form of an edge list.
+#'
 #' @param user_ids A character vector of user ids (never screen names)
 #'
 #' @return A tibble where each row corresponds to a follower relationship
 #' from the user in the 'from' column to the user in to 'to' column
+#'
+#' @importFrom dplyr bind_rows
+#' @export
 get_followers <- function(user_ids, n = 150) {
   # here we will need to query twice: once to ask who we actually
   # have *complete* followship edges for, and then a second time to get
@@ -61,8 +67,11 @@ merge_then_fetch_connect_followers <- function(user_ids, n) {
   return_val
 }
 
-
+#' Fetches the followers of the provided user ID's via `rtweet`.
+#'
 #' @return an nx2 tibble edge list
+#'
+#' @importFrom dplyr rename bind_cols bind_rows
 fetch_followers <- function(user_ids, n) {
   print("FETCH FOLLOWERS CALLED")
 
@@ -77,6 +86,9 @@ fetch_followers <- function(user_ids, n) {
 }
 
 
+#' Checks whether follower data has already been sampled for the provided
+#' vector of users.
+#'
 #' @param user_ids to fetch the sampling status for
 #'
 #' @return a list of all users who either (1) are not currently in the

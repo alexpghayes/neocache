@@ -22,7 +22,9 @@ Imports:
     rtweet,
     socialsampler (>= 0.0.0.9002),
     tibble,
-    dplyr
+    dplyr,
+    glue,
+    readr
 Suggests: 
     knitr,
     rmarkdown,
