@@ -72,12 +72,11 @@ merge_then_fetch_connect_followers <- function(user_ids, n) {
 #' @return an nx2 tibble edge list
 #'
 #' @importFrom dplyr rename bind_cols bind_rows
+#' @importFrom rtweet get_followers
 fetch_followers <- function(user_ids, n) {
-  print("FETCH FOLLOWERS CALLED")
-
   final <- empty_user_edges()
   for(to_id in user_ids) {
-    final <- rtweet::get_followers(to_id, n = n) %>%
+    final <- get_followers(to_id, n = n) %>%
       rename(from=user_id) %>%
       bind_cols(to=to_id) %>%
       bind_rows(final)

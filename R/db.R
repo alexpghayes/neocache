@@ -51,6 +51,8 @@ start_neo4j <- function() {
 }
 
 #' start_neo4j but used exclusively in unit testing
+#'
+#' @export
 start_test_neo4j <- function() {
   message("Checking the status of Docker...")
   # Check if Docker is running

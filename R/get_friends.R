@@ -71,10 +71,11 @@ merge_then_fetch_connect_friends <- function(user_ids, n) {
 #'
 #' @param user_ids a vector of user ids
 #' @return an nx2 tibble edge list
+#'
+#' @importFrom rtweet get_friends
+#' @importFrom dplyr rename
 fetch_friends <- function(user_ids, n) {
-  print("FETCH FRIENDS CALLED")
-
-  rtweet::get_friends(user_ids, n = n) %>%
+  get_friends(user_ids, n = n) %>%
    rename(from=user, to=user_id)
 }
 
