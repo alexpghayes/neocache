@@ -50,7 +50,7 @@ merge_then_fetch_connect_friends <- function(user_ids, n) {
 
   ### 1.
   sample_time <- Sys.time()
-  edge_list <- get_friends(user_ids, n = n) %>%
+  edge_list <- rtweet::get_friends(user_ids, n = n) %>%
     rename(from = user, to = user_id)
 
   ### 2.

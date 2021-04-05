@@ -51,7 +51,10 @@ merge_then_fetch_connect_followers <- function(user_ids, n) {
 
   ### 1.
   sample_time <- Sys.time()
-  edge_list <- fetch_followers(user_ids, n = n)
+  to_id <- user_ids
+  edge_list <- rtweet::get_followers(to_id, n = n) %>%
+    rename(from = user_id) %>%
+    mutate(to = to_id)
 
   ### 2.
   docker_bulk_merge_users(c(user_ids, edge_list$from))
@@ -68,24 +71,6 @@ merge_then_fetch_connect_followers <- function(user_ids, n) {
 
   return_val
 }
-
-#' Fetches the followers of the provided user ID's via `rtweet`.
-#'
-#' @return an nx2 tibble edge list
-#'
-#' @importFrom dplyr rename bind_cols bind_rows
-#' @importFrom rtweet get_followers
-fetch_followers <- function(user_ids, n) {
-  final <- empty_user_edges()
-  for (to_id in user_ids) {
-    final <- get_followers(to_id, n = n) %>%
-      rename(from = user_id) %>%
-      bind_cols(to = to_id) %>%
-      bind_rows(final)
-  }
-  final
-}
-
 
 #' Checks whether follower data has already been sampled for the provided
 #' vector of users.

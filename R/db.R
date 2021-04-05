@@ -80,7 +80,6 @@ sup4j <- function(query, con = get_connexion()) {
 docker_bulk_connect_nodes <- function(tbl) {
   # Create temp file to write the data into
   tmp <- tempfile()
-  on.exit(file.remove(tmp))
 
   # Write the data; we use cat instead of write to eliminate any trailing newline
   cat(paste0("to,from\n", paste0('"', tbl$to, '","', tbl$from, '"', collapse = "\n")), file = tmp)
@@ -95,6 +94,8 @@ docker_bulk_connect_nodes <- function(tbl) {
   )
 
   sup4j(connect_qry)
+
+  tbl
 }
 
 
@@ -106,7 +107,6 @@ docker_bulk_merge_users <- function(user_ids) {
   on.exit(file.remove(tmp))
 
   cat(paste0("user_id\n", paste0('"', user_ids, '"', collapse = "\n")), file = tmp)
-
   copy_csv_to_docker(tmp)
 
   add_qry <- glue("LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row MERGE (n:User {{user_id:row.user_id}})")
@@ -136,7 +136,6 @@ db_get_friends <- function(user_ids) {
   )
 
   tmp <- tempfile()
-  on.exit(file.remove(tmp))
 
   pull_friend_data_from_docker(tmp)
 
@@ -147,7 +146,6 @@ db_get_friends <- function(user_ids) {
       to.user_id = readr::col_character()
     )
   )
-
 
   if (length(results) != 2) {
     return(empty_user_edges())
@@ -178,7 +176,6 @@ db_get_followers <- function(user_ids) {
   )
 
   tmp <- tempfile()
-  on.exit(file.remove(tmp))
 
   pull_friend_data_from_docker(tmp)
 

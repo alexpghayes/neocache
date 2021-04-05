@@ -1,5 +1,8 @@
 # return TRUE for success, FALSE for failure
 
+# update: these should all use the stevedore package
+# https://github.com/richfitz/stevedore
+
 success <- function(sys_code) {
   sys_code == 0
 }
@@ -33,6 +36,6 @@ copy_csv_to_docker <- function(path) {
 }
 
 pull_friend_data_from_docker <- function(path) {
-  code <- system(glue("docker cp neocache_docker:/var/lib/neo4j/import/get_friends.csv {tmp}"))
+  code <- system(glue("docker cp neocache_docker:/var/lib/neo4j/import/get_friends.csv {path}"))
   success(code)
 }
