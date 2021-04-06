@@ -40,13 +40,7 @@ copy_csv_to_docker <- function(local_path, output_name, container_name) {
   success(code)
 }
 
-<<<<<<< HEAD
 copy_csv_from_docker <- function(file_name, local_path, container_name) {
-  print(glue("docker cp {container_name}:/var/lib/neo4j/import/{file_name} {local_path}"))
   code <- system(glue("docker cp {container_name}:/var/lib/neo4j/import/{file_name} {local_path}"))
-=======
-pull_friend_data_from_docker <- function(path) {
-  code <- system(glue("docker cp neocache_docker:/var/lib/neo4j/import/get_friends.csv {path}"))
->>>>>>> 4dcc5a00cbe71259977598624d838758224f1d05
   success(code)
 }

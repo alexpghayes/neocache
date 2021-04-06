@@ -60,13 +60,9 @@ docker_bulk_connect_nodes <- function(tbl, cache) {
     "MATCH (to:User {{user_id:row.to}}) MATCH (from:User {{user_id:row.from}}) CREATE (from)-[:FOLLOWS]->(to)"
   )
 
-<<<<<<< HEAD
   sup4j(connect_qry, get_connexion(cache))
-=======
-  sup4j(connect_qry)
 
   tbl
->>>>>>> 4dcc5a00cbe71259977598624d838758224f1d05
 }
 
 
@@ -77,14 +73,10 @@ docker_bulk_merge_users <- function(user_ids, cache) {
   tmp <- tempfile()
 
   cat(paste0("user_id\n", paste0('"', user_ids, '"', collapse = "\n")), file = tmp)
-<<<<<<< HEAD
 
   copy_csv_to_docker(tmp, "data.csv", cache$container_name)
 
   on.exit(file.remove(tmp))
-=======
-  copy_csv_to_docker(tmp)
->>>>>>> 4dcc5a00cbe71259977598624d838758224f1d05
 
   add_qry <- glue("LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row MERGE (n:User {{user_id:row.user_id}})")
   sup4j(add_qry, get_connexion(cache))

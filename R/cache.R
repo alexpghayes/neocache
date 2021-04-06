@@ -102,7 +102,7 @@ load_cache <- function(cache) {
 
   # Wait for Neo4j to launch
   log_info(
-    "{cache$container_name} Docker container successfully launched.\n",
+    glue("{cache$container_name} Docker container successfully launched.\n")
   )
   log_info(
     "Waiting for Neo4j to come online, this may take a while..."

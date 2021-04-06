@@ -72,7 +72,7 @@ merge_then_fetch_connect_followers <- function(user_ids, n, cache) {
   return_val
 }
 
-<<<<<<< HEAD
+
 #' Fetches the followers of the provided user ID's via `rtweet`.
 #'
 #' @return an nx2 tibble edge list
@@ -91,8 +91,6 @@ fetch_followers <- function(user_ids, n) {
 }
 
 
-=======
->>>>>>> 4dcc5a00cbe71259977598624d838758224f1d05
 #' Checks whether follower data has already been sampled for the provided
 #' vector of users.
 #'
