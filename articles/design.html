@@ -325,7 +325,7 @@
   <span class="co"># to combine the logic in the following steps</span>
   <span class="va">new_edges</span> <span class="op">&lt;-</span> <span class="fu">add_new_friends</span><span class="op">(</span><span class="va">status</span><span class="op">$</span><span class="va">not_in_graph</span><span class="op">)</span>
   <span class="va">upgraded_edges</span> <span class="op">&lt;-</span> <span class="fu">sample_existing_friends</span><span class="op">(</span><span class="va">status</span><span class="op">$</span><span class="va">sampled_friends_at_is_null</span><span class="op">)</span>
-  <span class="va">existing_edges</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/db_get_friends.html">db_get_friends</a></span><span class="op">(</span><span class="va">status</span><span class="op">$</span><span class="va">sampled_friends_at_not_null</span><span class="op">)</span>
+  <span class="va">existing_edges</span> <span class="op">&lt;-</span> <span class="fu">db_get_friends</span><span class="op">(</span><span class="va">status</span><span class="op">$</span><span class="va">sampled_friends_at_not_null</span><span class="op">)</span>
   <span class="co"># need to be careful about duplicate edges here. ideally</span>
   <span class="co"># we guarantee that edges are unique somehow before this, but if not</span>
   <span class="co"># we can use dplyr::distinct(), although this is an expensive operation</span>
