@@ -1,11 +1,11 @@
 #' Get the connexion object that facilitates access to the Neo4j database
 #'
 #' @return connexion object
-get_connexion <- function() {
+get_connexion <- function(cache) {
   con <- neo4j_api$new(
-    url = "http://localhost:7474",
-    user = "neo4j",
-    password = "pass"
+    url = cache$url,
+    user = cache$neo4j_user,
+    password = cache$neo4j_pass
   )
 
   con
@@ -16,14 +16,14 @@ get_connexion <- function() {
 #'
 #' @export
 start_neo4j <- function() {
-  log_debug("Checking the status of Docker...")
+  log_info("Checking the status of Docker...")
   # Check if Docker is running
   if (!find_docker()) {
     stop("Docker does not appear to be running. Please start Docker and try again.")
   }
   log_debug("Docker seems to be running.\n")
 
-  log_debug("Attempting to start Neocache container...")
+  log_info("Attempting to start Neocache container...")
   # Start the Docker container
   # First try to run the existing Docker container
   if (!start_neocache_docker()) {
@@ -33,7 +33,7 @@ start_neo4j <- function() {
     }
   }
 
-  log_debug(
+  log_info(
     "Neocache container successfully launched.\n",
     "\nWaiting for Neo4j to come online, this may take a while..."
   )
@@ -42,7 +42,7 @@ start_neo4j <- function() {
   con <- get_connexion()
 
   while (try(con$ping()) != 200) {
-    Sys.sleep(3)
+    Sys.sleep(5)
   }
 
   log_debug("Neo4j successfully started.")
@@ -68,7 +68,7 @@ stop_neo4j <- function() {
 #' @return the return value from call_neo4j
 #'
 #' @keywords internal
-sup4j <- function(query, con = get_connexion()) {
+sup4j <- function(query, con) {
   suppressMessages(call_neo4j(query, con))
 }
 
@@ -77,15 +77,16 @@ sup4j <- function(query, con = get_connexion()) {
 #'
 #' @param tbl tibble containing columns for 'to' and 'from' consisting of user_ids
 #' @return the same tibble edge list that was provided as an argument
-docker_bulk_connect_nodes <- function(tbl) {
+docker_bulk_connect_nodes <- function(tbl, cache) {
   # Create temp file to write the data into
   tmp <- tempfile()
-  on.exit(file.remove(tmp))
 
   # Write the data; we use cat instead of write to eliminate any trailing newline
   cat(paste0("to,from\n", paste0('"', tbl$to, '","', tbl$from, '"', collapse = "\n")), file = tmp)
 
-  copy_csv_to_docker(tmp)
+  copy_csv_to_docker(tmp, "data.csv", cache$container_name)
+
+  on.exit(file.remove(tmp))
 
   # Add a node for each of the root user's friends and connect the root user to them
   ## This query runs on joe50k in ~2.75 minutes
@@ -94,23 +95,24 @@ docker_bulk_connect_nodes <- function(tbl) {
     "MATCH (to:User {{user_id:row.to}}) MATCH (from:User {{user_id:row.from}}) CREATE (from)-[:FOLLOWS]->(to)"
   )
 
-  sup4j(connect_qry)
+  sup4j(connect_qry, get_connexion(cache))
 }
 
 
 #' Merges a batch of nodes to the graph with nothing but user_id's
 #'
 #' @param user_ids a vector of user_ids to generate MERGE queries for
-docker_bulk_merge_users <- function(user_ids) {
+docker_bulk_merge_users <- function(user_ids, cache) {
   tmp <- tempfile()
-  on.exit(file.remove(tmp))
 
   cat(paste0("user_id\n", paste0('"', user_ids, '"', collapse = "\n")), file = tmp)
 
-  copy_csv_to_docker(tmp)
+  copy_csv_to_docker(tmp, "data.csv", cache$container_name)
+
+  on.exit(file.remove(tmp))
 
   add_qry <- glue("LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row MERGE (n:User {{user_id:row.user_id}})")
-  sup4j(add_qry)
+  sup4j(add_qry, get_connexion(cache))
 
 }
 
@@ -122,8 +124,12 @@ docker_bulk_merge_users <- function(user_ids) {
 #'
 #' @return a 2-column tibble edge list with entries from the users in user_ids
 #' to their friends
-db_get_friends <- function(user_ids) {
-  con <- get_connexion()
+db_get_friends <- function(user_ids, cache) {
+  if(is.na(user_ids)) {
+    return(empty_user_edges())
+  }
+
+  con <- get_connexion(cache)
 
   sup4j(
     paste0(
@@ -136,9 +142,10 @@ db_get_friends <- function(user_ids) {
   )
 
   tmp <- tempfile()
-  on.exit(file.remove(tmp))
 
-  pull_friend_data_from_docker(tmp)
+  copy_csv_from_docker("get_friends.csv", tmp, cache$container_name)
+
+  on.exit(file.remove(tmp))
 
   results <- readr::read_csv(
     tmp,
@@ -147,7 +154,6 @@ db_get_friends <- function(user_ids) {
       to.user_id = readr::col_character()
     )
   )
-
 
   if (length(results) != 2) {
     return(empty_user_edges())
@@ -164,8 +170,8 @@ db_get_friends <- function(user_ids) {
 #'
 #' @return a 2-column tibble edge list with entries from the users in user_ids
 #' to their followers
-db_get_followers <- function(user_ids) {
-  con <- get_connexion()
+db_get_followers <- function(user_ids, cache) {
+  con <- get_connexion(cache)
 
   sup4j(
     paste0(
@@ -178,9 +184,10 @@ db_get_followers <- function(user_ids) {
   )
 
   tmp <- tempfile()
-  on.exit(file.remove(tmp))
 
-  pull_friend_data_from_docker(tmp)
+  copy_csv_to_docker(tmp, "data.csv", cache$container_name)
+
+  on.exit(file.remove(tmp))
 
   results <- readr::read_csv(
     tmp,

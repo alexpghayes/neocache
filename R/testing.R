@@ -45,7 +45,7 @@ start_test_neo4j <- function() {
 
 
 #' stop_neo4j but used exclusively in unit testing
-stop_neo4j <- function() {
+stop_test_neo4j <- function() {
   if (system("docker stop neocache_test_container", ignore.stdout = TRUE) != 0) {
     warning("Error returned when attempting to stop docker container.")
   } else {

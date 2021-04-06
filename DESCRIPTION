@@ -23,7 +23,8 @@ Imports:
     tibble,
     dplyr,
     glue,
-    readr
+    readr,
+    logger
 Suggests: 
     knitr,
     rmarkdown,

@@ -7,18 +7,18 @@
 #' from the user in the 'from' column to the user in to 'to' column
 #'
 #' @export
-get_friends <- function(user_ids, n = 150) {
+get_friends <- function(user_ids, cache, n = 150) {
   # here we will need to query twice: once to ask who we actually
   # have *complete* friendship edges for, and then a second time to get
   # those friendship edges
   user_ids <- c(user_ids)
-  status <- friend_sampling_status(user_ids)
+  status <- friend_sampling_status(user_ids, cache)
 
 
   # sample the friends of all the users w/o sampled friends
-  new_edges <- merge_then_fetch_connect_friends(status$not_in_graph, n)
-  upgraded_edges <- merge_then_fetch_connect_friends(status$sampled_friends_at_is_null, n)
-  existing_edges <- db_get_friends(status$sampled_friends_at_not_null)
+  new_edges <- merge_then_fetch_connect_friends(status$not_in_graph, n, cache)
+  upgraded_edges <- merge_then_fetch_connect_friends(status$sampled_friends_at_is_null, n, cache)
+  existing_edges <- db_get_friends(status$sampled_friends_at_not_null, cache)
 
   # need to be careful about duplicate edges here. ideally
   # we guarantee that edges are unique somehow before this, but if not
@@ -38,7 +38,7 @@ get_friends <- function(user_ids, n = 150) {
 #' @param n how many friends to sample at a time for each user
 #'
 #' @return a 2-column tibble edge list from user_ids to their friends
-merge_then_fetch_connect_friends <- function(user_ids, n) {
+merge_then_fetch_connect_friends <- function(user_ids, n, cache) {
   # set sampled_friends_at to Sys.time()
   # sampled_at and sampled_followers_at default to NULL
   # return friends of each user
@@ -50,23 +50,23 @@ merge_then_fetch_connect_friends <- function(user_ids, n) {
 
   ### 1.
   sample_time <- Sys.time()
-  edge_list <- get_friends(user_ids, n = n) %>%
+  edge_list <- rtweet::get_friends(user_ids, n = n) %>%
     rename(from = user, to = user_id)
 
   ### 2.
-  docker_bulk_merge_users(c(user_ids, edge_list$to))
+  docker_bulk_merge_users(c(user_ids, edge_list$to), cache)
 
   ### 3.
-  return_val <- docker_bulk_connect_nodes(edge_list)
+  docker_bulk_connect_nodes(edge_list, cache)
 
   ### 4.
   update_qry <- glue(
     'WITH ["', glue_collapse(user_ids, sep = '","'), '"] AS user_ids UNWIND user_ids AS id ',
     'MATCH (n:User {{user_id:id}}) SET n.sampled_friends_at = "{sample_time}"'
   )
-  sup4j(update_qry)
+  sup4j(update_qry, get_connexion(cache))
 
-  return_val
+  edge_list
 }
 
 #' Checks whether friend data has already been sampled for the provided
@@ -77,9 +77,9 @@ merge_then_fetch_connect_friends <- function(user_ids, n) {
 #' @return a list of all users who either (1) are not currently in the
 #' graph, (2) are in the graph but their friends have not been sampled,
 #' (3) are in the graph and have sampled friends
-friend_sampling_status <- function(user_ids) {
+friend_sampling_status <- function(user_ids, cache) {
   # generate based on queries of user.sampled_friends_at node property
-  present_users <- db_lookup_users(user_ids)
+  present_users <- db_lookup_users(user_ids, cache)
   not_in_graph <- setdiff(user_ids, present_users$user_id)
   unsampled_users <- present_users %>%
     filter(is.na(sampled_friends_at)) %>%

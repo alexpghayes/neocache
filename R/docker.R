@@ -9,30 +9,31 @@ find_docker <- function() {
   success(code)
 }
 
-start_neocache_docker <- function() {
-  code <- system("docker start neocache_docker", ignore.stdout = TRUE, ignore.stderr = TRUE)
+start_docker <- function(container_name) {
+  code <- system(glue("docker start {container_name}"), ignore.stdout = TRUE, ignore.stderr = TRUE)
   success(code)
 }
 
-create_neocache_docker <- function() {
-  code <- system(
-    "docker run --name neocache_docker -p7474:7474 -p7687:7687 -d -e NEO4J_AUTH=neo4j/pass -e NEO4J_apoc_export_file_enabled=true -e NEO4J_apoc_import_file_enabled=true -e NEO4J_apoc_import_file_use__neo4j__config=true -e NEO4JLABS_PLUGINS=[\\\"apoc\\\"] neo4j:3.5.21",
+create_docker_container <- function(container_name, neo4j_user, neo4j_pass, http_port, bolt_port) {
+  code <- system(glue(
+    "docker run --name {container_name} -p{http_port}:{http_port} -p{bolt_port}:{bolt_port} -d -e NEO4J_AUTH={neo4j_user}/{neo4j_pass} -e NEO4J_apoc_export_file_enabled=true -e NEO4J_apoc_import_file_enabled=true -e NEO4J_apoc_import_file_use__neo4j__config=true -e NEO4JLABS_PLUGINS=[\\\"apoc\\\"] -e NEO4J_dbms_connector_http_advertised__address=:{http_port} -e NEO4J_dbms_connector_http_listen__address=:{http_port} -e NEO4J_dbms_connector_bolt_advertised__address=:{bolt_port} -e NEO4J_dbms_connector_bolt_listen__address=:{bolt_port} neo4j:3.5.21"),
     ignore.stdout = TRUE
   )
   success(code)
 }
 
-stop_neocache_docker <- function() {
-  code <- system("docker stop neocache_docker", ignore.stdout = TRUE)
+stop_docker <- function(container_name) {
+  code <- system("docker stop {container_name}", ignore.stdout = TRUE)
   success(code)
 }
 
-copy_csv_to_docker <- function(path) {
-  code <- system(glue("docker cp {path} neocache_docker:/var/lib/neo4j/import/data.csv"))
+copy_csv_to_docker <- function(local_path, output_name, container_name) {
+  code <- system(glue("docker cp {local_path} {container_name}:/var/lib/neo4j/import/{output_name}"))
   success(code)
 }
 
-pull_friend_data_from_docker <- function(path) {
-  code <- system(glue("docker cp neocache_docker:/var/lib/neo4j/import/get_friends.csv {tmp}"))
+copy_csv_from_docker <- function(file_name, local_path, container_name) {
+  print(glue("docker cp {container_name}:/var/lib/neo4j/import/{file_name} {local_path}"))
+  code <- system(glue("docker cp {container_name}:/var/lib/neo4j/import/{file_name} {local_path}"))
   success(code)
 }
