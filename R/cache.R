@@ -19,7 +19,10 @@ new_cache <- function(cache_name, neo4j_user = "neo4j", neo4j_pass = "password",
     log_debug(glue("Appending port to end of URL; new URL: {url}"))
   }
 
+  log_debug("Creating {cache_name} Docker container...")
   if(create_docker_container(cache_name, neo4j_user, neo4j_pass, http_port, bolt_port)) {
+    log_debug("{cache_name} Docker container successfully created.")
+
     cache <- list(
       container_name = cache_name,
       neo4j_user = neo4j_user,
@@ -38,11 +41,11 @@ new_cache <- function(cache_name, neo4j_user = "neo4j", neo4j_pass = "password",
       glue("{cache_name}.rds")
     )
 
+    log_debug(glue("Writing cache rds to {cache_save_path}"))
     write_rds(cache, cache_save_path)
-
     cache
   } else {
-    log_error("Failed to create a Docker container.")
+    log_error("Failed to create the {cache_name} Docker container.")
   }
 }
 
@@ -59,7 +62,7 @@ get_cache <- function(cache_name) {
     glue("{cache_name}.rds")
   )
 
-  print(cache_save_path)
+  log_debug(glue("Loading cache rds from {cache_save_path}"))
 
   if(file.exists(cache_save_path)) {
     read_rds(cache_save_path)
@@ -75,6 +78,41 @@ get_cache <- function(cache_name) {
 #' @param cache the cache object that the user wishes to start
 #'
 #' @export
-start_cache <- function(cache_name) {
-  start_docker(cache_name)
+load_cache <- function(cache) {
+  # First check if the container is already running
+  if(is_docker_container_running(cache$container_name)) {
+    log_info(glue(
+      "{cache$container_name} Docker container appears to be running already."
+    ))
+  } else {
+    # Check if Docker is running
+    log_info("Checking the status of Docker...")
+    if(!find_docker()) {
+      stop("Docker does not appear to be running. Please start Docker and try again.")
+    }
+    log_info("Docker seems to be running.\n")
+
+    # Start the Docker container
+    log_info(glue("Attempting to start {cache$container_name} Docker container..."))
+    if(!start_docker(cache$container_name)) {
+      stop("This Docker container does not appear to exist. If you create a cache ",
+           "with new_cache(...) this container will be automatically created for you.")
+    }
+  }
+
+  # Wait for Neo4j to launch
+  log_info(
+    "{cache$container_name} Docker container successfully launched.\n",
+  )
+  log_info(
+    "Waiting for Neo4j to come online, this may take a while..."
+  )
+
+  con <- get_connexion(cache)
+  while(try(con$ping()) != 200) {
+    Sys.sleep(8)
+  }
+
+  log_info("Neo4j successfully started.")
 }
+
