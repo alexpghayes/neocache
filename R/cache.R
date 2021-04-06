@@ -116,3 +116,15 @@ load_cache <- function(cache) {
   log_info("Neo4j successfully started.")
 }
 
+#' Sends CYPHER queries to a given connexion object while suppressing output
+#' messages that call_neo4j throws.
+#'
+#' @param query the CYPHER query to be passed to call_neo4j
+#' @param con the neo4j connection object to be passed to call_neo4j
+#'
+#' @return the return value from call_neo4j
+#'
+#' @keywords internal
+sup4j <- function(query, con = get_connexion()) {
+  suppressMessages(call_neo4j(query, con))
+}
