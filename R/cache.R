@@ -9,16 +9,29 @@
 #'
 #' @importFrom readr write_rds
 #' @export
-new_cache <- function(cache_name, neo4j_user = "neo4j", neo4j_pass = "password", url = "http://localhost:7474", http_port = 7474, bolt_port = 7687) {
-  if(!startsWith(url, "http://")) {
-    url <- "http://" + url
-    log_debug(glue("Appending http:// to beginning of URL; new URL: {url}"))
-  }
-  if(!endsWith(url, glue(":{http_port}"))) {
-    url <- url + ":" + as.character(http_port)
-    log_debug(glue("Appending port to end of URL; new URL: {url}"))
+new_cache <- function(cache_name, neo4j_user = "neo4j", neo4j_pass = "password", http_port = 7474, bolt_port = 7687, url = NULL) {
+  # Make sure the Docker is running first
+  if(!find_docker()) {
+    stop("Docker does not appear to be running. Please start Docker and then try again.")
   }
 
+  # Warn the user that conflicts may arise when using default ports
+  if(http_port == 7474) {
+    warning("You have selected the default HTTP port 7474. Conflicts will arise if you try ",
+            "to run multiple caches with the same port selected.")
+  }
+  if(bolt_port == 7687) {
+    warning("You have selected the default Bolt port 7687. Conflicts will arise if you try ",
+            "to run multiple caches with the same port selected.")
+  }
+
+  # Tidy up the URL string to make sure that it is formatted properly
+  if(is.null(url)) {
+    url <- paste0("http://localhost:", http_port)
+    message("While this cache is running, the Neo4j web interace will be available at ", url)
+  }
+
+  # Create the Docker container and cache rds file
   log_debug("Creating {cache_name} Docker container...")
   if(create_docker_container(cache_name, neo4j_user, neo4j_pass, http_port, bolt_port)) {
     log_debug("{cache_name} Docker container successfully created.")
@@ -110,7 +123,13 @@ load_cache <- function(cache) {
 
   con <- get_connexion(cache)
   while(try(con$ping()) != 200) {
-    Sys.sleep(8)
+    # Wait to try again
+    Sys.sleep(10)
+
+    # Check to make sure the container is still running before trying again
+    if(!is_docker_container_running(cache$container_name)) {
+      stop("Something went wrong and the Docker container shut itself down.")
+    }
   }
 
   log_info("Neo4j successfully started.")

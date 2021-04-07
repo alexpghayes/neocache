@@ -48,6 +48,8 @@ merge_then_fetch_connect_friends <- function(user_ids, n, cache) {
     return(empty_user_edges())
   }
 
+  print("Using rtweet")
+
   ### 1.
   sample_time <- Sys.time()
   edge_list <- rtweet::get_friends(user_ids, n = n) %>%
