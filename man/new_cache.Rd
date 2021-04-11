@@ -8,7 +8,6 @@ not already exist.}
 \usage{
 new_cache(
   cache_name,
-  neo4j_user = "neo4j",
   neo4j_pass = "password",
   http_port = 7474,
   bolt_port = 7687,
@@ -17,8 +16,6 @@ new_cache(
 }
 \arguments{
 \item{cache_name}{the name of the cache and associated Docker container}
-
-\item{neo4j_user}{the username for the Neo4j instance}
 
 \item{neo4j_pass}{the password for the Neo4j instance}
 
