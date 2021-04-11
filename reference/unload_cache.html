@@ -6,9 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Creates and saves a new cache instance with the given information.  Also
-generates a new Docker container with the given information if one does
-not already exist. — new_cache • neocache</title>
+<title>Stops the Docker container and Neo4j instance for the given cache — unload_cache • neocache</title>
 
 
 <!-- jquery -->
@@ -41,12 +39,8 @@ not already exist. — new_cache • neocache</title>
 
 
 
-<meta property="og:title" content="Creates and saves a new cache instance with the given information.  Also
-generates a new Docker container with the given information if one does
-not already exist. — new_cache" />
-<meta property="og:description" content="Creates and saves a new cache instance with the given information.  Also
-generates a new Docker container with the given information if one does
-not already exist." />
+<meta property="og:title" content="Stops the Docker container and Neo4j instance for the given cache — unload_cache" />
+<meta property="og:description" content="Stops the Docker container and Neo4j instance for the given cache" />
 
 
 
@@ -126,49 +120,23 @@ not already exist." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Creates and saves a new cache instance with the given information.  Also
-generates a new Docker container with the given information if one does
-not already exist.</h1>
+    <h1>Stops the Docker container and Neo4j instance for the given cache</h1>
     <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/cache.R'><code>R/cache.R</code></a></small>
-    <div class="hidden name"><code>new_cache.Rd</code></div>
+    <div class="hidden name"><code>unload_cache.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Creates and saves a new cache instance with the given information.  Also
-generates a new Docker container with the given information if one does
-not already exist.</p>
+    <p>Stops the Docker container and Neo4j instance for the given cache</p>
     </div>
 
-    <pre class="usage"><span class='fu'>new_cache</span><span class='op'>(</span>
-  <span class='va'>cache_name</span>,
-  neo4j_pass <span class='op'>=</span> <span class='st'>"password"</span>,
-  http_port <span class='op'>=</span> <span class='fl'>7474</span>,
-  bolt_port <span class='op'>=</span> <span class='fl'>7687</span>,
-  url <span class='op'>=</span> <span class='cn'>NULL</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>unload_cache</span><span class='op'>(</span><span class='va'>cache</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>cache_name</th>
-      <td><p>the name of the cache and associated Docker container</p></td>
-    </tr>
-    <tr>
-      <th>neo4j_pass</th>
-      <td><p>the password for the Neo4j instance</p></td>
-    </tr>
-    <tr>
-      <th>http_port</th>
-      <td><p>the port that Neo4j will use from inside of the Docker container for its HTTP connection</p></td>
-    </tr>
-    <tr>
-      <th>bolt_port</th>
-      <td><p>the port that Neo4j will use from inside of the Docker container for its Bolt connection</p></td>
-    </tr>
-    <tr>
-      <th>url</th>
-      <td><p>the url used to connect to the Neo4j database</p></td>
+      <th>cache</th>
+      <td><p>the cache object that the user wishes to start</p></td>
     </tr>
     </table>
 
