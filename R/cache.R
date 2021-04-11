@@ -4,7 +4,6 @@
 #'
 #' @param cache_name the name of the cache and associated Docker container
 #' @param url the url used to connect to the Neo4j database
-#' @param neo4j_user the username for the Neo4j instance
 #' @param neo4j_pass the password for the Neo4j instance
 #' @param http_port the port that Neo4j will use from inside of the Docker container for its HTTP connection
 #' @param bolt_port the port that Neo4j will use from inside of the Docker container for its Bolt connection
@@ -14,17 +13,27 @@
 #' @importFrom rappdirs app_dir
 #'
 #' @export
-new_cache <- function(cache_name, neo4j_user = "neo4j", neo4j_pass = "password", http_port = 7474, bolt_port = 7687, url = NULL) {
+new_cache <- function(cache_name, neo4j_pass = "password", http_port = 7474, bolt_port = 7687, url = NULL) {
   # Make sure the Docker is running first
   if(!find_docker()) {
     stop("Docker does not appear to be running. Please start Docker and then try again.")
   }
 
+  # Make sure the container does not already exist
+  if(docker_container_exists(cache_name)) {
+    stop(glue("A Docker container by the name of {cache_name} already exists."))
+  }
+
+  # Make sure the password does not contain spaces
+  if(grepl(" ", neo4j_pass)) {
+    stop("The Neo4j password must not contain any spaces. Please try again with a new password.")
+  }
+
   # Check to make sure that the selected ports are currently available
-  if(!is_up("127.0.0.1", port=http_port)) {
+  if(is_up("127.0.0.1", port=http_port)) {
     stop("The selected HTTP port is currently in use. Please try another port.")
   }
-  if(!is_up("127.0.0.1", port=bolt_port)) {
+  if(is_up("127.0.0.1", port=bolt_port)) {
     stop("The selected Bolt port is currently in use. Please try another port.")
   }
 
@@ -46,15 +55,15 @@ new_cache <- function(cache_name, neo4j_user = "neo4j", neo4j_pass = "password",
 
   # Create the Docker container and cache rds file
   log_debug("Creating {cache_name} Docker container...")
-  if(create_docker_container(cache_name, neo4j_user, neo4j_pass, http_port, bolt_port)) {
+  if(create_docker_container(cache_name, neo4j_pass, http_port, bolt_port)) {
     log_debug("{cache_name} Docker container successfully created.")
 
     cache <- list(
       container_name = cache_name,
-      neo4j_user = neo4j_user,
-      neo4j_pass = neo4j_pass,
-      url = url,
-      http_port = http_port
+      neo4j_pass     = neo4j_pass,
+      url            = url,
+      http_port      = http_port,
+      bolt_port      = bolt_port
     )
 
     cache_folder <- rappdirs::app_dir("neocache")$cache()
@@ -71,7 +80,7 @@ new_cache <- function(cache_name, neo4j_user = "neo4j", neo4j_pass = "password",
     write_rds(cache, cache_save_path)
     cache
   } else {
-    log_error("Failed to create the {cache_name} Docker container.")
+    stop("Failed to create the {cache_name} Docker container.")
   }
 }
 
@@ -97,10 +106,9 @@ get_cache <- function(cache_name) {
   if(file.exists(cache_save_path)) {
     read_rds(cache_save_path)
   } else {
-    log_error("This cache does not exist. Try using new_cache(...) instead.")
+    stop("This cache does not exist. Try using new_cache(...) instead.")
   }
 }
-
 
 
 #' Starts the Docker container and Neo4j instance for the given cache
@@ -109,6 +117,14 @@ get_cache <- function(cache_name) {
 #'
 #' @export
 load_cache <- function(cache) {
+  # Check to make sure that the selected ports are currently available
+  if(is_up("127.0.0.1", port=cache$http_port)) {
+    stop("The selected HTTP port is already in use.")
+  }
+  if(is_up("127.0.0.1", port=cache$bolt_port)) {
+    stop("The selected Bolt port is already in use.")
+  }
+
   # First check if the container is already running
   if(is_docker_container_running(cache$container_name)) {
     log_info(glue(
@@ -128,18 +144,18 @@ load_cache <- function(cache) {
       stop("This Docker container does not appear to exist. If you create a cache ",
            "with new_cache(...) this container will be automatically created for you.")
     }
+
+    log_info(
+      glue("{cache$container_name} Docker container successfully launched.\n")
+    )
   }
 
   # Wait for Neo4j to launch
   log_info(
-    glue("{cache$container_name} Docker container successfully launched.\n")
-  )
-  log_info(
     "Waiting for Neo4j to come online, this may take a while..."
   )
 
-  con <- get_connexion(cache)
-  while(try(con$ping()) != 200) {
+  while(!is_up("localhost", port = cache$http_port)) {
     # Wait to try again
     Sys.sleep(10)
 
@@ -152,15 +168,48 @@ load_cache <- function(cache) {
   log_info("Neo4j successfully started.")
 }
 
-#' Sends CYPHER queries to a given connexion object while suppressing output
-#' messages that call_neo4j throws.
+
+#' Stops the Docker container and Neo4j instance for the given cache
 #'
-#' @param query the CYPHER query to be passed to call_neo4j
-#' @param cache the cache to interface with
+#' @param cache the cache object that the user wishes to start
 #'
-#' @return the return value from call_neo4j
+#' @export
+unload_cache <- function(cache) {
+  # Make sure that the Docker container is actually running
+  if(!is_docker_container_running(cache$container_name)) {
+    stop(glue("The {cache$container_name} Docker container does not appear to be running."))
+  }
+
+  if(!stop_docker(cache$container_name)) {
+    stop(glue("An error occurred when trying to stop the {cache$container_name} Docker container."))
+  }
+}
+
+
+#' Removes the Docker container and cache save file corresponding to the given
+#' cache
 #'
-#' @keywords internal
-sup4j <- function(query, cache) {
-  suppressMessages(call_neo4j(query, get_connexion(cache)))
+#' @param cache the cache object that the user wishes to start
+#'
+#' @importFrom rappdirs app_dir
+#'
+#' @export
+remove_cache <- function(cache) {
+  # Make sure that the container actually exists
+  if(!docker_container_exists(cache$container_name)) {
+    stop(glue("A Docker container by the name of {cache$container_name} does not appear to exist."))
+  }
+
+  # Make sure that the Docker container is stopped
+  tryCatch({unload_cache(cache)}, error = function(cond) {})
+
+  # Remove the Docker container
+  remove_docker_container(cache$container_name)
+
+  # Remove the cache .rds save file
+  cache_save_path <- file.path(
+    rappdirs::app_dir("neocache")$cache(),
+    glue("{cache$container_name}.rds")
+  )
+  file.remove(cache_save_path)
 }

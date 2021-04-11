@@ -6,11 +6,25 @@
 get_connexion <- function(cache) {
   con <- neo4j_api$new(
     url = cache$url,
-    user = cache$neo4j_user,
+    user = "neo4j",
     password = cache$neo4j_pass
   )
 
   con
+}
+
+
+#' Sends CYPHER queries to a given connexion object while suppressing output
+#' messages that call_neo4j throws.
+#'
+#' @param query the CYPHER query to be passed to call_neo4j
+#' @param cache the cache to interface with
+#'
+#' @return the return value from call_neo4j
+#'
+#' @keywords internal
+sup4j <- function(query, cache) {
+  suppressMessages(call_neo4j(query, get_connexion(cache)))
 }
 
 
