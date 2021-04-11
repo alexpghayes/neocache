@@ -56,7 +56,7 @@ merge_then_fetch_connect_followers <- function(user_ids, n, cache) {
   sample_time <- Sys.time()
   to_id <- user_ids
   edge_list <- rtweet::get_followers(to_id, n = n) %>%
-    rename(from = user_id) %>%
+    rename(from = .data$user_id) %>%
     mutate(to = to_id)
 
   ### 2.
@@ -89,7 +89,7 @@ fetch_followers <- function(user_ids, n) {
   final <- empty_user_edges()
   for (to_id in user_ids) {
     final <- rtweet::get_followers(to_id, n = n) %>%
-      rename(from = user_id) %>%
+      rename(from = .data$user_id) %>%
       bind_cols(to = to_id) %>%
       bind_rows(final)
   }
@@ -111,8 +111,8 @@ follower_sampling_status <- function(user_ids, cache) {
   present_users <- db_lookup_users(user_ids, cache)
   not_in_graph <- setdiff(user_ids, present_users$user_id)
   unsampled_users <- present_users %>%
-    filter(is.na(sampled_followers_at)) %>%
-    pull(user_id)
+    filter(is.na(.data$sampled_followers_at)) %>%
+    pull(.data$user_id)
   sampled_users <- setdiff(user_ids, c(unsampled_users, not_in_graph))
 
   if (length(not_in_graph) == 0) {

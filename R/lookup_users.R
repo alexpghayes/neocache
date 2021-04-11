@@ -14,9 +14,9 @@
 lookup_users <- function(user_ids, cache) {
   user_data <- db_lookup_users(user_ids, cache)
 
-  sampled_data <- filter(user_data, !is.na(sampled_at))
+  sampled_data <- filter(user_data, !is.na(.data$sampled_at))
   not_in_graph_ids <- setdiff(user_ids, user_data$user_id)
-  not_sampled_ids <- filter(user_data, is.na(sampled_at))$user_id
+  not_sampled_ids <- filter(user_data, is.na(.data$sampled_at))$user_id
 
   if (length(not_sampled_ids) != 0) {
     upgraded_user_data <- fetch_lookup_update(not_sampled_ids, cache)

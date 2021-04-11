@@ -4,7 +4,7 @@
 #' @importFrom tibble tibble
 #' @importFrom glue glue glue_collapse
 #' @importFrom readr write_csv
-#' @importFrom logger log_debug log_info
+#' @importFrom logger log_debug log_info log_error
 #' @keywords internal
 "_PACKAGE"
 

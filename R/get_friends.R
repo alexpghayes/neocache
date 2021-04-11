@@ -56,7 +56,7 @@ merge_then_fetch_connect_friends <- function(user_ids, n, cache) {
   ### 1.
   sample_time <- Sys.time()
   edge_list <- rtweet::get_friends(user_ids, n = n) %>%
-    rename(from = user, to = user_id)
+    rename(from = .data$user, to = .data$user_id)
 
   ### 2.
   docker_bulk_merge_users(c(user_ids, edge_list$to), cache)
@@ -88,8 +88,8 @@ friend_sampling_status <- function(user_ids, cache) {
   present_users <- db_lookup_users(user_ids, cache)
   not_in_graph <- setdiff(user_ids, present_users$user_id)
   unsampled_users <- present_users %>%
-    filter(is.na(sampled_friends_at)) %>%
-    pull(user_id)
+    filter(is.na(.data$sampled_friends_at)) %>%
+    pull(.data$user_id)
   sampled_users <- setdiff(user_ids, c(unsampled_users, not_in_graph))
 
   if (length(not_in_graph) == 0) {
