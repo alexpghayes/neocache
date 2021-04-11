@@ -4,7 +4,7 @@
 \alias{fetch_lookup_update}
 \title{Fetches the user's lookup_users data then updates their info in the graph.}
 \usage{
-fetch_lookup_update(user_ids)
+fetch_lookup_update(user_ids, cache)
 }
 \arguments{
 \item{user_ids}{a vector of user_ids}

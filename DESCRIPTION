@@ -24,7 +24,9 @@ Imports:
     dplyr,
     glue,
     readr,
-    logger
+    logger,
+    rappdirs,
+    pingr
 Suggests: 
     knitr,
     rmarkdown,

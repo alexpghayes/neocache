@@ -4,7 +4,7 @@
 \alias{db_get_followers}
 \title{Gets the followers for the given user that already exist in the DB.}
 \usage{
-db_get_followers(user_ids)
+db_get_followers(user_ids, cache)
 }
 \arguments{
 \item{user_ids}{a list of user_ids who are already in the DB and

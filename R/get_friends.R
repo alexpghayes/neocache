@@ -2,6 +2,8 @@
 #' Returns the friend relationships via a tibble edge list.
 #'
 #' @param user_ids A character vector of user ids (never screen names)
+#' @param cache the cache to interface with
+#' @param n the number of friends to retrieve for each user_id
 #'
 #' @return A tibble where each row corresponds to a follower relationship
 #' from the user in the 'from' column to the user in to 'to' column
@@ -36,6 +38,7 @@ get_friends <- function(user_ids, cache, n = 150) {
 #'
 #' @param user_ids a list of user_ids to add friend edges to the db for
 #' @param n how many friends to sample at a time for each user
+#' @param cache the cache to interface with
 #'
 #' @return a 2-column tibble edge list from user_ids to their friends
 merge_then_fetch_connect_friends <- function(user_ids, n, cache) {
@@ -75,6 +78,7 @@ merge_then_fetch_connect_friends <- function(user_ids, n, cache) {
 #' vector of users.
 #'
 #' @param user_ids to fetch the sampling status for
+#' @param cache the cache to interface with
 #'
 #' @return a list of all users who either (1) are not currently in the
 #' graph, (2) are in the graph but their friends have not been sampled,

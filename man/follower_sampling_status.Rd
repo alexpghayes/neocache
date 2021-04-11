@@ -5,7 +5,7 @@
 \title{Checks whether follower data has already been sampled for the provided
 vector of users.}
 \usage{
-follower_sampling_status(user_ids)
+follower_sampling_status(user_ids, cache)
 }
 \arguments{
 \item{user_ids}{to fetch the sampling status for}

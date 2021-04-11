@@ -6,7 +6,7 @@
 data for users who have already been looked up, and fetches new data for users
 who have not bee looked up yet.}
 \usage{
-lookup_users(user_ids)
+lookup_users(user_ids, cache)
 }
 \arguments{
 \item{users}{A character vector of user ids (never screen names)}

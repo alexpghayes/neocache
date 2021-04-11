@@ -1,5 +1,7 @@
 #' Get the connexion object that facilitates access to the Neo4j database
 #'
+#' @param cache the cache to interface with
+#'
 #' @return connexion object
 get_connexion <- function(cache) {
   con <- neo4j_api$new(
@@ -16,6 +18,8 @@ get_connexion <- function(cache) {
 #' tbl argument.
 #'
 #' @param tbl tibble containing columns for 'to' and 'from' consisting of user_ids
+#' @param cache the cache to interface with
+#'
 #' @return the same tibble edge list that was provided as an argument
 docker_bulk_connect_nodes <- function(tbl, cache) {
   # Create temp file to write the data into
@@ -44,6 +48,7 @@ docker_bulk_connect_nodes <- function(tbl, cache) {
 #' Merges a batch of nodes to the graph with nothing but user_id's
 #'
 #' @param user_ids a vector of user_ids to generate MERGE queries for
+#' @param cache the cache to interface with
 docker_bulk_merge_users <- function(user_ids, cache) {
   tmp <- tempfile()
 
@@ -63,6 +68,7 @@ docker_bulk_merge_users <- function(user_ids, cache) {
 #'
 #' @param user_ids a list of user_ids who are already in the DB and
 #' already have friend edge data
+#' @param cache the cache to interface with
 #'
 #' @return a 2-column tibble edge list with entries from the users in user_ids
 #' to their friends
@@ -107,6 +113,7 @@ db_get_friends <- function(user_ids, cache) {
 #'
 #' @param user_ids a list of user_ids who are already in the DB and
 #' already have follower edge data
+#' @param cache the cache to interface with
 #'
 #' @return a 2-column tibble edge list with entries from the users in user_ids
 #' to their followers

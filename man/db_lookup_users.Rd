@@ -4,7 +4,7 @@
 \alias{db_lookup_users}
 \title{Looks up users that are already in the database.}
 \usage{
-db_lookup_users(user_ids)
+db_lookup_users(user_ids, cache)
 }
 \arguments{
 \item{user_ids}{list of user_ids to fetch existing lookup_user data for in

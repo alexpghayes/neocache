@@ -5,7 +5,7 @@
 \title{Creates nodes for the given user_ids in the graph, then fetches their
 info and updates that info in the graph.}
 \usage{
-merge_fetch_lookup_update(user_ids)
+merge_fetch_lookup_update(user_ids, cache)
 }
 \arguments{
 \item{user_ids}{a vector of user_ids}

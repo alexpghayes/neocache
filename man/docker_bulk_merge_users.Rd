@@ -4,7 +4,7 @@
 \alias{docker_bulk_merge_users}
 \title{Merges a batch of nodes to the graph with nothing but user_id's}
 \usage{
-docker_bulk_merge_users(user_ids)
+docker_bulk_merge_users(user_ids, cache)
 }
 \arguments{
 \item{user_ids}{a vector of user_ids to generate MERGE queries for}

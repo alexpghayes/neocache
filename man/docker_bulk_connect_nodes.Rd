@@ -5,7 +5,7 @@
 \title{This function creates edges en masse between all the nodes provided in the
 tbl argument.}
 \usage{
-docker_bulk_connect_nodes(tbl)
+docker_bulk_connect_nodes(tbl, cache)
 }
 \arguments{
 \item{tbl}{tibble containing columns for 'to' and 'from' consisting of user_ids}

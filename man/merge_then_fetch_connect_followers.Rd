@@ -10,7 +10,7 @@
 \item Set the sampled_followers_at property for nodes that were sampled
 }}
 \usage{
-merge_then_fetch_connect_followers(user_ids, n)
+merge_then_fetch_connect_followers(user_ids, n, cache)
 }
 \arguments{
 \item{user_ids}{a list of user_ids to add follower edges to the db for}

@@ -2,11 +2,14 @@
 #' data for users who have already been looked up, and fetches new data for users
 #' who have not bee looked up yet.
 #'
-#' @param users A character vector of user ids (never screen names)
+#' @param user_ids A character vector of user ids (never screen names)
+#' @param cache the cache to interface with
+#'
 #' @return A tibble where each row corresponds to a User and each column
 #' to one of the User properties. If a user cannot be sampled, should
 #' return nothing for that user. If no users can be sampled, should
 #' return an empty tibble with appropriate columns.
+#'
 #' @export
 lookup_users <- function(user_ids, cache) {
   user_data <- db_lookup_users(user_ids, cache)
@@ -33,6 +36,8 @@ lookup_users <- function(user_ids, cache) {
 #' Fetches the user's lookup_users data then updates their info in the graph.
 #'
 #' @param user_ids a vector of user_ids
+#' @param cache the cache to interface with
+#'
 #' @return tibble of user data
 fetch_lookup_update <- function(user_ids, cache) {
   set_string <- "SET n.sampled_at=row.sampled_at SET n.screen_name=row.screen_name SET n.protected=toBoolean(row.protected) SET n.followers_count=toInteger(row.followers_count) SET n.friends_count=toInteger(row.friends_count) SET n.listed_count=toInteger(row.listed_count) SET n.statuses_count=toInteger(row.statuses_count) SET n.favourites_count=toInteger(row.favourites_count) SET n.account_created_at=toInteger(row.account_created_at) SET n.verified=toBoolean(row.verified) SET n.profile_url=row.profile_url SET n.profile_expanded_url=row.profile_expanded_url SET n.account_lang=row.account_lang SET n.profile_banner_url=row.profile_banner_url SET n.profile_background_url=row.profile_background_url SET n.profile_image_url=row.profile_image_url SET n.name=row.name SET n.location=row.location SET n.description=row.description SET n.url=row.url"
@@ -64,6 +69,8 @@ fetch_lookup_update <- function(user_ids, cache) {
 #' info and updates that info in the graph.
 #'
 #' @param user_ids a vector of user_ids
+#' @param cache the cache to interface with
+#'
 #' @return tibble of user data
 merge_fetch_lookup_update <- function(user_ids, cache) {
   docker_bulk_merge_users(user_ids, cache)
@@ -74,6 +81,7 @@ merge_fetch_lookup_update <- function(user_ids, cache) {
 #' Takes in a vector of user_ids and returns their lookup_users info.
 #'
 #' @param user_ids vector of user_ids
+#'
 #' @return tibble of user data
 fetch_lookup <- function(user_ids) {
   print("FETCH LOOKUP CALLED")
@@ -88,8 +96,9 @@ fetch_lookup <- function(user_ids) {
 
 #' Looks up users that are already in the database.
 #'
-#' @param user_ids list of user_ids to fetch existing lookup_user data for in
-#' the db
+#' @param user_ids list of user_ids to fetch existing lookup_user data for in the db
+#' @param cache the cache to interface with
+#'
 #' @return a tibble with any existing data for user_ids
 db_lookup_users <- function(user_ids, cache) {
   # return a tibble where each row corresponds to a User and each column

@@ -6,9 +6,13 @@
 #' @param url the url used to connect to the Neo4j database
 #' @param neo4j_user the username for the Neo4j instance
 #' @param neo4j_pass the password for the Neo4j instance
+#' @param http_port the port that Neo4j will use from inside of the Docker container for its HTTP connection
+#' @param bolt_port the port that Neo4j will use from inside of the Docker container for its Bolt connection
 #'
 #' @importFrom readr write_rds
 #' @importFrom pingr is_up
+#' @importFrom rappdirs app_dir
+#'
 #' @export
 new_cache <- function(cache_name, neo4j_user = "neo4j", neo4j_pass = "password", http_port = 7474, bolt_port = 7687, url = NULL) {
   # Make sure the Docker is running first
@@ -72,11 +76,15 @@ new_cache <- function(cache_name, neo4j_user = "neo4j", neo4j_pass = "password",
 }
 
 
-#' @param name the name of the cache to use
+#' Retrieves a previously generated cache object.
+#'
+#' @param cache_name the name of the cache to use
 #' @return a list object containing information pertaining to the associated
 #'         Docker container and Neo4j instance
 #'
 #' @importFrom readr read_rds
+#' @importFrom rappdirs app_dir
+#'
 #' @export
 get_cache <- function(cache_name) {
   cache_save_path <- file.path(
@@ -148,7 +156,7 @@ load_cache <- function(cache) {
 #' messages that call_neo4j throws.
 #'
 #' @param query the CYPHER query to be passed to call_neo4j
-#' @param con the neo4j connection object to be passed to call_neo4j
+#' @param cache the cache to interface with
 #'
 #' @return the return value from call_neo4j
 #'

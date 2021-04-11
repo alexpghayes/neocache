@@ -5,7 +5,7 @@
 \title{Fetches the friends of each of the users contained in the user_ids vector.
 Returns the friend relationships via a tibble edge list.}
 \usage{
-get_friends(user_ids, n = 150)
+get_friends(user_ids, cache, n = 150)
 }
 \arguments{
 \item{user_ids}{A character vector of user ids (never screen names)}
