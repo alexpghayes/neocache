@@ -8,11 +8,20 @@
 #' @param neo4j_pass the password for the Neo4j instance
 #'
 #' @importFrom readr write_rds
+#' @importFrom pingr is_up
 #' @export
 new_cache <- function(cache_name, neo4j_user = "neo4j", neo4j_pass = "password", http_port = 7474, bolt_port = 7687, url = NULL) {
   # Make sure the Docker is running first
   if(!find_docker()) {
     stop("Docker does not appear to be running. Please start Docker and then try again.")
+  }
+
+  # Check to make sure that the selected ports are currently available
+  if(!is_up("127.0.0.1", port=http_port)) {
+    stop("The selected HTTP port is currently in use. Please try another port.")
+  }
+  if(!is_up("127.0.0.1", port=bolt_port)) {
+    stop("The selected Bolt port is currently in use. Please try another port.")
   }
 
   # Warn the user that conflicts may arise when using default ports
@@ -144,6 +153,6 @@ load_cache <- function(cache) {
 #' @return the return value from call_neo4j
 #'
 #' @keywords internal
-sup4j <- function(query, con = get_connexion()) {
-  suppressMessages(call_neo4j(query, con))
+sup4j <- function(query, cache) {
+  suppressMessages(call_neo4j(query, get_connexion(cache)))
 }

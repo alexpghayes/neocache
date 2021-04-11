@@ -12,31 +12,6 @@ get_connexion <- function(cache) {
 }
 
 
-
-
-#' Stops the Neo4j Docker container.
-stop_neo4j <- function() {
-  if (!stop_neocache_docker()) {
-    warning("Error returned when attempting to stop docker container.")
-  } else {
-    log_debug("Successfully shut down Neo4j and the Neocache Docker container.")
-  }
-}
-
-
-#' Sends CYPHER queries to a given connexion object while suppressing output
-#' messages that call_neo4j throws.
-#'
-#' @param query the CYPHER query to be passed to call_neo4j
-#' @param con the neo4j connection object to be passed to call_neo4j
-#'
-#' @return the return value from call_neo4j
-#'
-#' @keywords internal
-sup4j <- function(query, con) {
-  suppressMessages(call_neo4j(query, con))
-}
-
 #' This function creates edges en masse between all the nodes provided in the
 #' tbl argument.
 #'
@@ -60,7 +35,7 @@ docker_bulk_connect_nodes <- function(tbl, cache) {
     "MATCH (to:User {{user_id:row.to}}) MATCH (from:User {{user_id:row.from}}) CREATE (from)-[:FOLLOWS]->(to)"
   )
 
-  sup4j(connect_qry, get_connexion(cache))
+  sup4j(connect_qry, cache)
 
   tbl
 }
@@ -79,7 +54,7 @@ docker_bulk_merge_users <- function(user_ids, cache) {
   on.exit(file.remove(tmp))
 
   add_qry <- glue("LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row MERGE (n:User {{user_id:row.user_id}})")
-  sup4j(add_qry, get_connexion(cache))
+  sup4j(add_qry, cache)
 
 }
 
@@ -96,8 +71,6 @@ db_get_friends <- function(user_ids, cache) {
     return(empty_user_edges())
   }
 
-  con <- get_connexion(cache)
-
   sup4j(
     paste0(
       'WITH "MATCH (from:User),(to:User) WHERE from.user_id in [\\\'',
@@ -105,7 +78,7 @@ db_get_friends <- function(user_ids, cache) {
       '\\\'] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id" AS query ',
       'CALL apoc.export.csv.query(query, "get_friends.csv", {}) YIELD file RETURN file'
     ),
-    con
+    cache
   )
 
   tmp <- tempfile()
@@ -138,8 +111,6 @@ db_get_friends <- function(user_ids, cache) {
 #' @return a 2-column tibble edge list with entries from the users in user_ids
 #' to their followers
 db_get_followers <- function(user_ids, cache) {
-  con <- get_connexion(cache)
-
   sup4j(
     paste0(
       'WITH "MATCH (from:User),(to:User) WHERE to.user_id in [\\\'',
@@ -147,7 +118,7 @@ db_get_followers <- function(user_ids, cache) {
       '\\\'] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id" AS query ',
       'CALL apoc.export.csv.query(query, "get_friends.csv", {}) YIELD file RETURN file'
     ),
-    con
+    cache
   )
 
   tmp <- tempfile()

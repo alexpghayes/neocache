@@ -53,7 +53,7 @@ fetch_lookup_update <- function(user_ids, cache) {
       "LOAD CSV WITH HEADERS FROM 'file:///lookup.csv' AS row MATCH (n:User {{user_id:row.user_id}}) ",
       "{set_string} RETURN n.user_id"
     ),
-    get_connexion(cache)
+    cache
   )
 
   user_info
@@ -92,8 +92,6 @@ fetch_lookup <- function(user_ids) {
 #' the db
 #' @return a tibble with any existing data for user_ids
 db_lookup_users <- function(user_ids, cache) {
-  con <- get_connexion(cache)
-
   # return a tibble where each row corresponds to a User and each column
   # to one of the User properties. when a user in not present in the
   # database, should not return a row in the output tibble for that
@@ -102,7 +100,7 @@ db_lookup_users <- function(user_ids, cache) {
   user_string <- glue_collapse(user_ids, sep = '","')
   query <- glue('MATCH (n) WHERE n.user_id in ["{user_string}"] RETURN n')
 
-  user_data <- sup4j(query, con)
+  user_data <- sup4j(query, cache)
 
   # If the users' data does not exist in the DB, return an empty lookup,
   # otherwise return the users' data

@@ -67,7 +67,7 @@ merge_then_fetch_connect_followers <- function(user_ids, n, cache) {
     'WITH ["', glue_collapse(user_ids, sep = '","'), '"] AS user_ids UNWIND user_ids AS id ',
     'MATCH (n:User {{user_id:id}}) SET n.sampled_followers_at = "{sample_time}"'
   )
-  sup4j(update_qry, get_connexion(cache))
+  sup4j(update_qry, cache)
 
   return_val
 }
