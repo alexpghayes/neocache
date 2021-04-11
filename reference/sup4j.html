@@ -125,7 +125,7 @@ messages that call_neo4j throws." />
     <div class="page-header">
     <h1>Sends CYPHER queries to a given connexion object while suppressing output
 messages that call_neo4j throws.</h1>
-    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/db.R'><code>R/db.R</code></a></small>
+    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/cache.R'><code>R/cache.R</code></a></small>
     <div class="hidden name"><code>sup4j.Rd</code></div>
     </div>
 
@@ -134,7 +134,7 @@ messages that call_neo4j throws.</h1>
 messages that call_neo4j throws.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>sup4j</span><span class='op'>(</span><span class='va'>query</span>, con <span class='op'>=</span> <span class='fu'><a href='get_connexion.html'>get_connexion</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>sup4j</span><span class='op'>(</span><span class='va'>query</span>, <span class='va'>cache</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -144,8 +144,8 @@ messages that call_neo4j throws.</p>
       <td><p>the CYPHER query to be passed to call_neo4j</p></td>
     </tr>
     <tr>
-      <th>con</th>
-      <td><p>the neo4j connection object to be passed to call_neo4j</p></td>
+      <th>cache</th>
+      <td><p>the cache to interface with</p></td>
     </tr>
     </table>
 

@@ -158,6 +158,12 @@ REMOVE THIS FUNCTION ONCE TESTING IS DONE</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="db_get_friends.html">db_get_friends()</a></code> </p>
+        </td>
+        <td><p>Gets the friends for the given user that already exist in the DB.</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="db_lookup_users.html">db_lookup_users()</a></code> </p>
         </td>
         <td><p>Looks up users that are already in the database.</p></td>
@@ -209,6 +215,18 @@ vector of users.</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="get_cache.html">get_cache()</a></code> </p>
+        </td>
+        <td><p>Retrieves a previously generated cache object.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="get_connexion.html">get_connexion()</a></code> </p>
+        </td>
+        <td><p>Get the connexion object that facilitates access to the Neo4j database</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="get_followers.html">get_followers()</a></code> </p>
         </td>
         <td><p>Fetches the follows of all of the users in a provided vector. Returns
@@ -220,6 +238,12 @@ the follower relationships in the form of an edge list.</p></td>
         </td>
         <td><p>Fetches the friends of each of the users contained in the user_ids vector.
 Returns the friend relationships via a tibble edge list.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="load_cache.html">load_cache()</a></code> </p>
+        </td>
+        <td><p>Starts the Docker container and Neo4j instance for the given cache</p></td>
       </tr><tr>
         
         <td>
@@ -262,9 +286,23 @@ info and updates that info in the graph.</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="new_cache.html">new_cache()</a></code> </p>
+        </td>
+        <td><p>Creates and saves a new cache instance with the given information.  Also
+generates a new Docker container with the given information if one does
+not already exist.</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="start_test_neo4j.html">start_test_neo4j()</a></code> </p>
         </td>
         <td><p>start_neo4j but used exclusively in unit testing</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="stop_test_neo4j.html">stop_test_neo4j()</a></code> </p>
+        </td>
+        <td><p>stop_neo4j but used exclusively in unit testing</p></td>
       </tr>
     </tbody>
     </table>

@@ -129,7 +129,7 @@
     <p>Gets the friends for the given user that already exist in the DB.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>db_get_friends</span><span class='op'>(</span><span class='va'>user_ids</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>db_get_friends</span><span class='op'>(</span><span class='va'>user_ids</span>, <span class='va'>cache</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -138,6 +138,10 @@
       <th>user_ids</th>
       <td><p>a list of user_ids who are already in the DB and
 already have friend edge data</p></td>
+    </tr>
+    <tr>
+      <th>cache</th>
+      <td><p>the cache to interface with</p></td>
     </tr>
     </table>
 

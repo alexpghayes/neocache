@@ -6,7 +6,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Get the connexion object that facilitates access to the Neo4j database — get_connexion • neocache</title>
+<title>Creates and saves a new cache instance with the given information.  Also
+generates a new Docker container with the given information if one does
+not already exist. — new_cache • neocache</title>
 
 
 <!-- jquery -->
@@ -39,8 +41,12 @@
 
 
 
-<meta property="og:title" content="Get the connexion object that facilitates access to the Neo4j database — get_connexion" />
-<meta property="og:description" content="Get the connexion object that facilitates access to the Neo4j database" />
+<meta property="og:title" content="Creates and saves a new cache instance with the given information.  Also
+generates a new Docker container with the given information if one does
+not already exist. — new_cache" />
+<meta property="og:description" content="Creates and saves a new cache instance with the given information.  Also
+generates a new Docker container with the given information if one does
+not already exist." />
 
 
 
@@ -120,29 +126,57 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Get the connexion object that facilitates access to the Neo4j database</h1>
-    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/db.R'><code>R/db.R</code></a></small>
-    <div class="hidden name"><code>get_connexion.Rd</code></div>
+    <h1>Creates and saves a new cache instance with the given information.  Also
+generates a new Docker container with the given information if one does
+not already exist.</h1>
+    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/cache.R'><code>R/cache.R</code></a></small>
+    <div class="hidden name"><code>new_cache.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Get the connexion object that facilitates access to the Neo4j database</p>
+    <p>Creates and saves a new cache instance with the given information.  Also
+generates a new Docker container with the given information if one does
+not already exist.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>get_connexion</span><span class='op'>(</span><span class='va'>cache</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>new_cache</span><span class='op'>(</span>
+  <span class='va'>cache_name</span>,
+  neo4j_user <span class='op'>=</span> <span class='st'>"neo4j"</span>,
+  neo4j_pass <span class='op'>=</span> <span class='st'>"password"</span>,
+  http_port <span class='op'>=</span> <span class='fl'>7474</span>,
+  bolt_port <span class='op'>=</span> <span class='fl'>7687</span>,
+  url <span class='op'>=</span> <span class='cn'>NULL</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>cache</th>
-      <td><p>the cache to interface with</p></td>
+      <th>cache_name</th>
+      <td><p>the name of the cache and associated Docker container</p></td>
+    </tr>
+    <tr>
+      <th>neo4j_user</th>
+      <td><p>the username for the Neo4j instance</p></td>
+    </tr>
+    <tr>
+      <th>neo4j_pass</th>
+      <td><p>the password for the Neo4j instance</p></td>
+    </tr>
+    <tr>
+      <th>http_port</th>
+      <td><p>the port that Neo4j will use from inside of the Docker container for its HTTP connection</p></td>
+    </tr>
+    <tr>
+      <th>bolt_port</th>
+      <td><p>the port that Neo4j will use from inside of the Docker container for its Bolt connection</p></td>
+    </tr>
+    <tr>
+      <th>url</th>
+      <td><p>the url used to connect to the Neo4j database</p></td>
     </tr>
     </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>connexion object</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
