@@ -9,6 +9,8 @@ docker_bulk_connect_nodes(tbl, cache)
 }
 \arguments{
 \item{tbl}{tibble containing columns for 'to' and 'from' consisting of user_ids}
+
+\item{cache}{the cache to interface with}
 }
 \value{
 the same tibble edge list that was provided as an argument

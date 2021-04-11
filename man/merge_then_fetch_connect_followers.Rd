@@ -16,6 +16,8 @@ merge_then_fetch_connect_followers(user_ids, n, cache)
 \item{user_ids}{a list of user_ids to add follower edges to the db for}
 
 \item{n}{how many followers to sample at a time for each user}
+
+\item{cache}{the cache to interface with}
 }
 \value{
 a 2-column tibble edge list from user_ids to their followers

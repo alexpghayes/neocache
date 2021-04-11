@@ -9,7 +9,7 @@ fetch_followers(user_ids, n)
 \arguments{
 \item{user_ids}{vector of user_ids whose followers are being fetches}
 
-\item{n}{the number of followers to fetch for each user_id, max; 5000}
+\item{n}{the number of followers to fetch for each user_id}
 }
 \value{
 an nx2 tibble edge list

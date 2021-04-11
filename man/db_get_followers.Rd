@@ -9,6 +9,8 @@ db_get_followers(user_ids, cache)
 \arguments{
 \item{user_ids}{a list of user_ids who are already in the DB and
 already have follower edge data}
+
+\item{cache}{the cache to interface with}
 }
 \value{
 a 2-column tibble edge list with entries from the users in user_ids

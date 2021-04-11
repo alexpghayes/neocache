@@ -8,6 +8,8 @@ docker_bulk_merge_users(user_ids, cache)
 }
 \arguments{
 \item{user_ids}{a vector of user_ids to generate MERGE queries for}
+
+\item{cache}{the cache to interface with}
 }
 \description{
 Merges a batch of nodes to the graph with nothing but user_id's

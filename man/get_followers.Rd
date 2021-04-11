@@ -9,6 +9,10 @@ get_followers(user_ids, cache, n = 150)
 }
 \arguments{
 \item{user_ids}{A character vector of user ids (never screen names)}
+
+\item{cache}{the cache to interface with}
+
+\item{n}{the number of followers to retrieve for each user_id}
 }
 \value{
 A tibble where each row corresponds to a follower relationship

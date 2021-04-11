@@ -9,6 +9,8 @@ merge_fetch_lookup_update(user_ids, cache)
 }
 \arguments{
 \item{user_ids}{a vector of user_ids}
+
+\item{cache}{the cache to interface with}
 }
 \value{
 tibble of user data

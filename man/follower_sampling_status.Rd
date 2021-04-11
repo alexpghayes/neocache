@@ -9,6 +9,8 @@ follower_sampling_status(user_ids, cache)
 }
 \arguments{
 \item{user_ids}{to fetch the sampling status for}
+
+\item{cache}{the cache to interface with}
 }
 \value{
 a list of all users who either (1) are not currently in the

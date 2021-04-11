@@ -7,8 +7,9 @@
 db_lookup_users(user_ids, cache)
 }
 \arguments{
-\item{user_ids}{list of user_ids to fetch existing lookup_user data for in
-the db}
+\item{user_ids}{list of user_ids to fetch existing lookup_user data for in the db}
+
+\item{cache}{the cache to interface with}
 }
 \value{
 a tibble with any existing data for user_ids

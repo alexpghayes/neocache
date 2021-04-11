@@ -9,7 +9,9 @@ who have not bee looked up yet.}
 lookup_users(user_ids, cache)
 }
 \arguments{
-\item{users}{A character vector of user ids (never screen names)}
+\item{user_ids}{A character vector of user ids (never screen names)}
+
+\item{cache}{the cache to interface with}
 }
 \value{
 A tibble where each row corresponds to a User and each column
