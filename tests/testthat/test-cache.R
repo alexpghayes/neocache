@@ -7,13 +7,16 @@ logger::log_threshold("FATAL")
 # This function ensures that the Docker containers we generate have unique names
 random_name <- function(n = 20) {
   letters <- c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
-  paste0(sample(letters, size=25, replace=TRUE), collapse="")
+  paste0(sample(letters, size = 25, replace = TRUE), collapse = "")
 }
 
 # Make sure that test_cache exists before we continue
-tryCatch({
-  new_cache("test_cache", http_port = 1513, bolt_port = 5013)
-}, error = function(cond) {})
+tryCatch(
+  {
+    new_cache("test_cache", http_port = 1513, bolt_port = 5013)
+  },
+  error = function(cond) {}
+)
 
 
 ################
@@ -24,10 +27,10 @@ test_that("new_cache is a list of cache information", {
   expect_warning(cache <- new_cache(name))
   expected_cache <- list(
     container_name = name,
-    neo4j_pass     = "password",
-    url            = "http://localhost:7474",
-    http_port      = 7474,
-    bolt_port      = 7687
+    neo4j_pass = "password",
+    url = "http://localhost:7474",
+    http_port = 7474,
+    bolt_port = 7687
   )
   expect_equal(cache, expected_cache)
   remove_cache(cache)
@@ -36,22 +39,22 @@ test_that("new_cache is a list of cache information", {
   cache <- new_cache(
     cache_name = name,
     neo4j_pass = "my_password",
-    http_port  = 1903,
-    bolt_port  = 1309,
-    url        = "http://127.0.0.1:1903"
+    http_port = 1903,
+    bolt_port = 1309,
+    url = "http://127.0.0.1:1903"
   )
   expected_cache <- list(
     container_name = name,
     neo4j_pass = "my_password",
-    url        = "http://127.0.0.1:1903",
-    http_port  = 1903,
-    bolt_port  = 1309
+    url = "http://127.0.0.1:1903",
+    http_port = 1903,
+    bolt_port = 1309
   )
   expect_equal(cache, expected_cache)
   remove_cache(cache)
 
-  expect_error(new_cache(name, neo4j_pass="something with spaces"))
-  expect_error(new_cache(name, neo4j_pass="one space"))
+  expect_error(new_cache(name, neo4j_pass = "something with spaces"))
+  expect_error(new_cache(name, neo4j_pass = "one space"))
 })
 
 test_that("get_cache retrieves expected information", {
@@ -64,9 +67,9 @@ test_that("get_cache retrieves expected information", {
   cache <- new_cache(
     cache_name = name,
     neo4j_pass = "my_password",
-    http_port  = 1903,
-    bolt_port  = 1309,
-    url        = "http://127.0.0.1:1903"
+    http_port = 1903,
+    bolt_port = 1309,
+    url = "http://127.0.0.1:1903"
   )
   expect_equal(cache, get_cache(name))
   remove_cache(cache)
@@ -102,9 +105,9 @@ test_that("load_cache and new_cache throw errors on occupied ports", {
   cache <- new_cache(
     cache_name = name,
     neo4j_pass = "my_password",
-    http_port  = 1903,
-    bolt_port  = 1309,
-    url        = "http://127.0.0.1:1903"
+    http_port = 1903,
+    bolt_port = 1309,
+    url = "http://127.0.0.1:1903"
   )
   load_cache(cache)
   expect_error(load_cache(cache))

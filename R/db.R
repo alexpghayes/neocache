@@ -74,7 +74,6 @@ docker_bulk_merge_users <- function(user_ids, cache) {
 
   add_qry <- glue("LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row MERGE (n:User {{user_id:row.user_id}})")
   sup4j(add_qry, cache)
-
 }
 
 
@@ -87,7 +86,7 @@ docker_bulk_merge_users <- function(user_ids, cache) {
 #' @return a 2-column tibble edge list with entries from the users in user_ids
 #' to their friends
 db_get_friends <- function(user_ids, cache) {
-  if(is.na(user_ids)) {
+  if (is.na(user_ids)) {
     return(empty_user_edges())
   }
 
@@ -162,4 +161,3 @@ db_get_followers <- function(user_ids, cache) {
 
   tibble(from = results$from.user_id, to = results$to.user_id)
 }
-

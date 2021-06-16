@@ -16,7 +16,7 @@ start_test_neo4j <- function() {
   if (system("docker start neocache_test_container", ignore.stdout = TRUE, ignore.stderr = TRUE) != 0) {
     # Container does not exist, create the container
     if (system("docker run --name neocache_test_container -p7474:7474 -p7687:7687 -d -e NEO4J_AUTH=neo4j/pass -e NEO4J_apoc_export_file_enabled=true -e NEO4J_apoc_import_file_enabled=true -e NEO4J_apoc_import_file_use__neo4j__config=true -e NEO4JLABS_PLUGINS=[\\\"apoc\\\"] neo4j:3.5.21",
-               ignore.stdout = TRUE
+      ignore.stdout = TRUE
     ) != 0) {
       stop("Failed to initiate docker container.")
     }
