@@ -145,13 +145,6 @@
       <tr>
         
         <td>
-          <p><code><a href="clear____db.html">clear____db()</a></code> </p>
-        </td>
-        <td><p>HELPER FUNCTION USED TO CLEAR THE DATABASE FOR TESTING,
-REMOVE THIS FUNCTION ONCE TESTING IS DONE</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="db_get_followers.html">db_get_followers()</a></code> </p>
         </td>
         <td><p>Gets the followers for the given user that already exist in the DB.</p></td>
@@ -215,43 +208,10 @@ vector of users.</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="get_cache.html">get_cache()</a></code> </p>
-        </td>
-        <td><p>Retrieves a previously generated cache object.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="get_connexion.html">get_connexion()</a></code> </p>
-        </td>
-        <td><p>Get the connexion object that facilitates access to the Neo4j database</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="get_followers.html">get_followers()</a></code> </p>
         </td>
         <td><p>Fetches the follows of all of the users in a provided vector. Returns
 the follower relationships in the form of an edge list.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="get_friends.html">get_friends()</a></code> </p>
-        </td>
-        <td><p>Fetches the friends of each of the users contained in the user_ids vector.
-Returns the friend relationships via a tibble edge list.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="load_cache.html">load_cache()</a></code> </p>
-        </td>
-        <td><p>Starts the Docker container and Neo4j instance for the given cache</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="lookup_users.html">lookup_users()</a></code> </p>
-        </td>
-        <td><p>Looks up information pertaining to a vector of provided users.  Fetches cached
-data for users who have already been looked up, and fetches new data for users
-who have not bee looked up yet.</p></td>
       </tr><tr>
         
         <td>
@@ -286,36 +246,47 @@ info and updates that info in the graph.</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="new_cache.html">new_cache()</a></code> </p>
+          <p><code><a href="nc_cache_exists.html">nc_cache_exists()</a></code> </p>
         </td>
-        <td><p>Creates and saves a new cache instance with the given information.  Also
-generates a new Docker container with the given information if one does
-not already exist.</p></td>
+        <td><p>Check if a cache with a given name exists</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="remove_cache.html">remove_cache()</a></code> </p>
+          <p><code><a href="nc_create_cache.html">nc_create_cache()</a></code> </p>
+        </td>
+        <td><p>Create a cache object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="nc_destroy_cache.html">nc_destroy_cache()</a></code> </p>
         </td>
         <td><p>Removes the Docker container and cache save file corresponding to the given
 cache</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="start_test_neo4j.html">start_test_neo4j()</a></code> </p>
+          <p><code><a href="nc_empty_cache.html">nc_empty_cache()</a></code> </p>
         </td>
-        <td><p>start_neo4j but used exclusively in unit testing</p></td>
+        <td><p>Remove all data from a cache</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="stop_test_neo4j.html">stop_test_neo4j()</a></code> </p>
+          <p><code><a href="nc_get_friends.html">nc_get_friends()</a></code> </p>
         </td>
-        <td><p>stop_neo4j but used exclusively in unit testing</p></td>
+        <td><p>Fetches the friends of each of the users contained in the user_ids vector.
+Returns the friend relationships via a tibble edge list.</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="unload_cache.html">unload_cache()</a></code> </p>
+          <p><code><a href="nc_lookup_users.html">nc_lookup_users()</a></code> </p>
         </td>
-        <td><p>Stops the Docker container and Neo4j instance for the given cache</p></td>
+        <td><p>Get (cached) information about Twitter users</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="nc_sitrep.html">nc_sitrep()</a></code> </p>
+        </td>
+        <td><p>Check caches with saved information</p></td>
       </tr>
     </tbody>
     </table>

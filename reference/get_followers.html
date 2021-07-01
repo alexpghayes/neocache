@@ -134,7 +134,7 @@ the follower relationships in the form of an edge list.</h1>
 the follower relationships in the form of an edge list.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>get_followers</span><span class='op'>(</span><span class='va'>user_ids</span>, <span class='va'>cache</span>, n <span class='op'>=</span> <span class='fl'>150</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>get_followers</span><span class='op'>(</span><span class='va'>user_ids</span>, <span class='va'>cache_name</span>, n <span class='op'>=</span> <span class='fl'>150</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -144,12 +144,12 @@ the follower relationships in the form of an edge list.</p>
       <td><p>A character vector of user ids (never screen names)</p></td>
     </tr>
     <tr>
-      <th>cache</th>
-      <td><p>the cache to interface with</p></td>
-    </tr>
-    <tr>
       <th>n</th>
       <td><p>the number of followers to retrieve for each user_id</p></td>
+    </tr>
+    <tr>
+      <th>cache</th>
+      <td><p>the cache to interface with</p></td>
     </tr>
     </table>
 

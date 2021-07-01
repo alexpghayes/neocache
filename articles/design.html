@@ -370,6 +370,12 @@
 <li>To think about: user states: healthy, banned, suspected, removed, etc, etc</li>
 </ul>
 </div>
+<div id="cache-design-dump" class="section level2">
+<h2 class="hasAnchor">
+<a href="#cache-design-dump" class="anchor"></a>Cache design dump</h2>
+<p>cache in one of two states: active or inactive. active means docker container is running</p>
+<p>library(neocache) 12:27 # 1 user creates a cache (once). this cache object gets saved to <code>~/.cache/neocache/{neocache_name}.rds</code> 12:28 when the user wants to do stuff, then first tell neocache to gets things running in the background cache &lt;- use_cache(“{neocache_name”) start_cache(cache) – starts docker 12:28 and then all the API calls need to explicitly use the cache 12:29 friends &lt;- get_friends(…, cache = cache) 12:32 each cache gets its own docker container</p>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

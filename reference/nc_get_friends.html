@@ -6,7 +6,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>neocache: Save Data from the Twitter API to a Neo4J Graph Database — neocache-package • neocache</title>
+<title>Fetches the friends of each of the users contained in the user_ids vector.
+Returns the friend relationships via a tibble edge list. — nc_get_friends • neocache</title>
 
 
 <!-- jquery -->
@@ -39,13 +40,10 @@
 
 
 
-<meta property="og:title" content="neocache: Save Data from the Twitter API to a Neo4J Graph Database — neocache-package" />
-<meta property="og:description" content="Facilitates robust sampling of the Twitter graph by saving
-    data about observed nodes into a data cache. Requests for new nodes
-    are smart and do not waste API requests on nodes already in the cache.
-    The cache can then be exported to a number of data structures more
-    appropriate for network analysis. Automatically manages multiple
-    tokens to speed up sampling with staying with API rate limits." />
+<meta property="og:title" content="Fetches the friends of each of the users contained in the user_ids vector.
+Returns the friend relationships via a tibble edge list. — nc_get_friends" />
+<meta property="og:description" content="Fetches the friends of each of the users contained in the user_ids vector.
+Returns the friend relationships via a tibble edge list." />
 
 
 
@@ -125,33 +123,90 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>neocache: Save Data from the Twitter API to a Neo4J Graph Database</h1>
-    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/neocache-package.R'><code>R/neocache-package.R</code></a></small>
-    <div class="hidden name"><code>neocache-package.Rd</code></div>
+    <h1>Fetches the friends of each of the users contained in the user_ids vector.
+Returns the friend relationships via a tibble edge list.</h1>
+    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/get_friends.R'><code>R/get_friends.R</code></a></small>
+    <div class="hidden name"><code>nc_get_friends.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Facilitates robust sampling of the Twitter graph by saving
-    data about observed nodes into a data cache. Requests for new nodes
-    are smart and do not waste API requests on nodes already in the cache.
-    The cache can then be exported to a number of data structures more
-    appropriate for network analysis. Automatically manages multiple
-    tokens to speed up sampling with staying with API rate limits.</p>
+    <p>Fetches the friends of each of the users contained in the user_ids vector.
+Returns the friend relationships via a tibble edge list.</p>
     </div>
 
+    <pre class="usage"><span class='fu'>nc_get_friends</span><span class='op'>(</span>
+  <span class='va'>users</span>,
+  <span class='va'>cache_name</span>,
+  n <span class='op'>=</span> <span class='fl'>5000</span>,
+  retryonratelimit <span class='op'>=</span> <span class='cn'>NULL</span>,
+  cursor <span class='op'>=</span> <span class='st'>"-1"</span>,
+  verbose <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  token <span class='op'>=</span> <span class='cn'>NULL</span>
+<span class='op'>)</span></pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>users</th>
+      <td><p>Screen name or user ID of target user from which the
+user IDs of friends (accounts followed BY target user) will be
+retrieved.</p></td>
+    </tr>
+    <tr>
+      <th>n</th>
+      <td><p>Desired number of results to return. Results are downloaded
+in pages when <code>n</code> is large; the default value will download a single
+page. Set <code>n = Inf</code> to download as many results as possible.</p>
+<p>The Twitter API rate limits the number of requests you can perform
+in each 15 minute period. The easiest way to download more than that is
+to use <code>retryonratelimit = TRUE</code>.</p>
+<p>You are not guaranteed to get exactly <code>n</code> results back. You will get
+fewer results when tweets have been deleted or if you hit a rate limit.
+You will get more results if you ask for a number of tweets that's not
+a multiple of page size, e.g. if you request <code>n = 150</code> and the page
+size is 200, you'll get 200 results back.</p></td>
+    </tr>
+    <tr>
+      <th>retryonratelimit</th>
+      <td><p>If <code>TRUE</code>, and a rate limit is exhausted, will wait
+until it refreshes. Most twitter rate limits refresh every 15 minutes.
+If <code>FALSE</code>, and the rate limit is exceeded, the function will terminate
+early with a warning; you'll still get back all results received up to
+that point. The default value, <code>NULL</code>, consults the option
+<code>rtweet.retryonratelimit</code> so that you can globally set it to <code>TRUE</code>,
+if desired.</p>
+<p>If you expect a query to take hours or days to perform, you should not
+rely soley on <code>retryonratelimit</code> because it does not handle other common
+failure modes like temporarily losing your internet connection.</p></td>
+    </tr>
+    <tr>
+      <th>cursor</th>
+      <td><p>Which page of results to return. The default will return
+the first page; you can supply the result from a previous call to
+continue pagination from where it left off.</p></td>
+    </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>Show progress bars and other messages indicating current
+progress?</p></td>
+    </tr>
+    <tr>
+      <th>token</th>
+      <td><p>Expert use only. Use this to override authentication for
+a single API call. In most cases you are better off changing the
+default for all calls. See <code>auth_as()</code> for details.</p></td>
+    </tr>
+    <tr>
+      <th>cache</th>
+      <td><p>The name of the cache to save data in.</p></td>
+    </tr>
+    </table>
 
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <div class='dont-index'><p>Useful links:</p><ul>
-<li><p><a href='https://github.com/alexpghayes/neocache'>https://github.com/alexpghayes/neocache</a></p></li>
-<li><p>Report bugs at <a href='https://github.com/alexpghayes/neocache/issues'>https://github.com/alexpghayes/neocache/issues</a></p></li>
-</ul>
-
-</div>
-    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
-
-    <p><strong>Maintainer</strong>: Alex Hayes <a href='mailto:alexpghayes@gmail.com'>alexpghayes@gmail.com</a> (<a href='https://orcid.org/0000-0002-4985-5160'>ORCID</a>)</p>
+    <p>A tibble where each row corresponds to a follower relationship
+from the user in the 'from' column to the user in to 'to' column</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>neocache: Save Data from the Twitter API to a Neo4J Graph Database — neocache-package • neocache</title>
+<title>Get (cached) information about Twitter users — nc_lookup_users • neocache</title>
 
 
 <!-- jquery -->
@@ -39,13 +39,10 @@
 
 
 
-<meta property="og:title" content="neocache: Save Data from the Twitter API to a Neo4J Graph Database — neocache-package" />
-<meta property="og:description" content="Facilitates robust sampling of the Twitter graph by saving
-    data about observed nodes into a data cache. Requests for new nodes
-    are smart and do not waste API requests on nodes already in the cache.
-    The cache can then be exported to a number of data structures more
-    appropriate for network analysis. Automatically manages multiple
-    tokens to speed up sampling with staying with API rate limits." />
+<meta property="og:title" content="Get (cached) information about Twitter users — nc_lookup_users" />
+<meta property="og:description" content="Looks up information pertaining to a vector of provided users. Retrieves
+cached data for users who have already been looked up, and fetches new
+data for users who have not bee looked up yet from the Twitter API." />
 
 
 
@@ -125,33 +122,40 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>neocache: Save Data from the Twitter API to a Neo4J Graph Database</h1>
-    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/neocache-package.R'><code>R/neocache-package.R</code></a></small>
-    <div class="hidden name"><code>neocache-package.Rd</code></div>
+    <h1>Get (cached) information about Twitter users</h1>
+    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/lookup_users.R'><code>R/lookup_users.R</code></a></small>
+    <div class="hidden name"><code>nc_lookup_users.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Facilitates robust sampling of the Twitter graph by saving
-    data about observed nodes into a data cache. Requests for new nodes
-    are smart and do not waste API requests on nodes already in the cache.
-    The cache can then be exported to a number of data structures more
-    appropriate for network analysis. Automatically manages multiple
-    tokens to speed up sampling with staying with API rate limits.</p>
+    <p>Looks up information pertaining to a vector of provided users. Retrieves
+cached data for users who have already been looked up, and fetches new
+data for users who have not bee looked up yet from the Twitter API.</p>
     </div>
 
+    <pre class="usage"><span class='fu'>nc_lookup_users</span><span class='op'>(</span><span class='va'>user_ids</span>, cache_name <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>user_ids</th>
+      <td><p>Character vector of Twitter user ids. <strong>DO NOT</strong>
+pass Twitter screen names, as <code>user_ids</code> are taken to be unique
+node identifiers.</p></td>
+    </tr>
+    <tr>
+      <th>cache</th>
+      <td><p>A <code>cache</code> object. See <code><a href='nc_create_cache.html'>nc_create_cache()</a></code>.</p></td>
+    </tr>
+    </table>
 
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <div class='dont-index'><p>Useful links:</p><ul>
-<li><p><a href='https://github.com/alexpghayes/neocache'>https://github.com/alexpghayes/neocache</a></p></li>
-<li><p>Report bugs at <a href='https://github.com/alexpghayes/neocache/issues'>https://github.com/alexpghayes/neocache/issues</a></p></li>
-</ul>
-
-</div>
-    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
-
-    <p><strong>Maintainer</strong>: Alex Hayes <a href='mailto:alexpghayes@gmail.com'>alexpghayes@gmail.com</a> (<a href='https://orcid.org/0000-0002-4985-5160'>ORCID</a>)</p>
+    <p>A tibble where each row corresponds to a User and each column
+to one of the User properties. If a user cannot be sampled, should
+return nothing for that user. If no users can be sampled, should
+return an empty tibble with appropriate columns.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
