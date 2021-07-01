@@ -260,3 +260,22 @@ because that shit is creepy (I’m not clear which of the following are User ver
 - bbox_coords <list>
 
 - To think about: user states: healthy, banned, suspected, removed, etc, etc
+
+## Cache design dump
+
+cache in one of two states: active or inactive. active means docker container is running
+
+library(neocache)
+12:27
+# 1
+user creates a cache (once). this cache object gets saved to `~/.cache/neocache/{neocache_name}.rds`
+12:28
+when the user wants to do stuff, then first tell neocache to gets things running in the background
+cache <- use_cache("{neocache_name")
+start_cache(cache) -- starts docker
+12:28
+and then all the API calls need to explicitly use the cache
+12:29
+friends <- get_friends(..., cache = cache)
+12:32
+each cache gets its own docker container

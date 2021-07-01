@@ -1,18 +1,10 @@
-#' Get the connexion object that facilitates access to the Neo4j database
-#'
-#' @param cache the cache to interface with
-#'
-#' @return connexion object
-get_connexion <- function(cache) {
-  con <- neo4j_api$new(
+neo4j_api_connection <- function(cache) {
+  neo4j_api$new(
     url = cache$url,
     user = "neo4j",
     password = cache$neo4j_pass
   )
-
-  con
 }
-
 
 #' Sends CYPHER queries to a given connexion object while suppressing output
 #' messages that call_neo4j throws.
@@ -23,8 +15,10 @@ get_connexion <- function(cache) {
 #' @return the return value from call_neo4j
 #'
 #' @keywords internal
-sup4j <- function(query, cache) {
-  suppressMessages(call_neo4j(query, get_connexion(cache)))
+query_neo4j <- function(query, cache) {
+
+  con <- neo4j_api_connection(cache)
+  suppressMessages(call_neo4j(query, con))
 }
 
 
@@ -53,7 +47,7 @@ docker_bulk_connect_nodes <- function(tbl, cache) {
     "MATCH (to:User {{user_id:row.to}}) MATCH (from:User {{user_id:row.from}}) CREATE (from)-[:FOLLOWS]->(to)"
   )
 
-  sup4j(connect_qry, cache)
+  query_neo4j(connect_qry, cache)
 
   tbl
 }
@@ -73,7 +67,7 @@ docker_bulk_merge_users <- function(user_ids, cache) {
   on.exit(file.remove(tmp))
 
   add_qry <- glue("LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row MERGE (n:User {{user_id:row.user_id}})")
-  sup4j(add_qry, cache)
+  query_neo4j(add_qry, cache)
 }
 
 
@@ -90,7 +84,7 @@ db_get_friends <- function(user_ids, cache) {
     return(empty_user_edges())
   }
 
-  sup4j(
+  query_neo4j(
     paste0(
       'WITH "MATCH (from:User),(to:User) WHERE from.user_id in [\\\'',
       glue_collapse(user_ids, sep = "\\',\\'"),
@@ -131,7 +125,7 @@ db_get_friends <- function(user_ids, cache) {
 #' @return a 2-column tibble edge list with entries from the users in user_ids
 #' to their followers
 db_get_followers <- function(user_ids, cache) {
-  sup4j(
+  query_neo4j(
     paste0(
       'WITH "MATCH (from:User),(to:User) WHERE to.user_id in [\\\'',
       glue_collapse(user_ids, sep = "\\',\\'"),
@@ -142,10 +136,7 @@ db_get_followers <- function(user_ids, cache) {
   )
 
   tmp <- tempfile()
-
   copy_csv_to_docker(tmp, "data.csv", cache$container_name)
-
-  on.exit(file.remove(tmp))
 
   results <- readr::read_csv(
     tmp,

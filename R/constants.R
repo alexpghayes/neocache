@@ -6,6 +6,8 @@ properties <- c(
 )
 
 
+#' Create an empty table of user data
+#'
 #' @return an empty tibble with columns named after all of the lookup_user
 #' properties.  Used when user data is unavailable
 #'
@@ -40,6 +42,8 @@ empty_lookup <- function() {
 }
 
 
+#' Create an empty table of following information
+#'
 #' @return an empty 2-column tibble used as a placeholder for
 #' when user data is not available
 #'

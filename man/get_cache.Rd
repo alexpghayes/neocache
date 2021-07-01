@@ -16,3 +16,4 @@ Docker container and Neo4j instance
 \description{
 Retrieves a previously generated cache object.
 }
+\keyword{internal}

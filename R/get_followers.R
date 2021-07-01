@@ -10,18 +10,21 @@
 #'
 #' @importFrom dplyr bind_rows
 #' @export
-get_followers <- function(user_ids, cache, n = 150) {
+get_followers <- function(user_ids, cache_name, n = 150) {
   # here we will need to query twice: once to ask who we actually
   # have *complete* followship edges for, and then a second time to get
   # those followship edges
+
+  cache <- nc_activate_cache(cache_name)
+
   user_ids <- c(user_ids)
   status <- follower_sampling_status(user_ids, cache)
 
 
   # sample the followers of all the users w/o sampled followers
   new_edges <- merge_then_fetch_connect_followers(status$not_in_graph, n, cache)
-  upgraded_edges <- merge_then_fetch_connect_followers(status$sampled_followers_at_is_null, n)
-  existing_edges <- db_get_followers(status$sampled_followers_at_not_null)
+  upgraded_edges <- merge_then_fetch_connect_followers(status$sampled_followers_at_is_null, n, cache = cache)
+  existing_edges <- db_get_followers(status$sampled_followers_at_not_null, cache = cache)
 
   # need to be careful about duplicate edges here. ideally
   # we guarantee that edges are unique somehow before this, but if not
@@ -70,7 +73,8 @@ merge_then_fetch_connect_followers <- function(user_ids, n, cache) {
     'WITH ["', glue_collapse(user_ids, sep = '","'), '"] AS user_ids UNWIND user_ids AS id ',
     'MATCH (n:User {{user_id:id}}) SET n.sampled_followers_at = "{sample_time}"'
   )
-  sup4j(update_qry, cache)
+
+  query_neo4j(update_qry, cache)
 
   return_val
 }
@@ -118,9 +122,11 @@ follower_sampling_status <- function(user_ids, cache) {
   if (length(not_in_graph) == 0) {
     not_in_graph <- NA
   }
+
   if (length(unsampled_users) == 0) {
     unsampled_users <- NA
   }
+
   if (length(sampled_users) == 0) {
     sampled_users <- NA
   }

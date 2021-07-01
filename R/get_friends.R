@@ -1,21 +1,22 @@
 #' Fetches the friends of each of the users contained in the user_ids vector.
 #' Returns the friend relationships via a tibble edge list.
 #'
-#' @param user_ids A character vector of user ids (never screen names)
-#' @param cache the cache to interface with
-#' @param n the number of friends to retrieve for each user_id
+#' @param cache The name of the cache to save data in.
+#' @inheritParams rtweet::get_friends
 #'
 #' @return A tibble where each row corresponds to a follower relationship
 #' from the user in the 'from' column to the user in to 'to' column
 #'
 #' @export
-get_friends <- function(user_ids, cache, n = 150) {
+nc_get_friends <- function(users, cache_name, n = 5000, retryonratelimit = NULL, cursor = "-1", verbose = TRUE, token = NULL) {
   # here we will need to query twice: once to ask who we actually
   # have *complete* friendship edges for, and then a second time to get
   # those friendship edges
-  user_ids <- c(user_ids)
-  status <- friend_sampling_status(user_ids, cache)
 
+  cache <- nc_activate_cache(cache_name)
+
+  user_ids <- users
+  status <- friend_sampling_status(user_ids, cache)
 
   # sample the friends of all the users w/o sampled friends
   new_edges <- merge_then_fetch_connect_friends(status$not_in_graph, n, cache)
@@ -51,12 +52,12 @@ merge_then_fetch_connect_friends <- function(user_ids, n, cache) {
     return(empty_user_edges())
   }
 
-  print("Using rtweet")
+  # print("Using rtweet")
 
   ### 1.
   sample_time <- Sys.time()
   edge_list <- rtweet::get_friends(user_ids, n = n) %>%
-    rename(from = .data$user, to = .data$user_id)
+    rename(from = .data$user, to = .data$ids)
 
   ### 2.
   docker_bulk_merge_users(c(user_ids, edge_list$to), cache)
@@ -69,7 +70,8 @@ merge_then_fetch_connect_friends <- function(user_ids, n, cache) {
     'WITH ["', glue_collapse(user_ids, sep = '","'), '"] AS user_ids UNWIND user_ids AS id ',
     'MATCH (n:User {{user_id:id}}) SET n.sampled_friends_at = "{sample_time}"'
   )
-  sup4j(update_qry, cache)
+
+  query_neo4j(update_qry, cache)
 
   edge_list
 }

@@ -1,17 +1,27 @@
-#' Looks up information pertaining to a vector of provided users.  Fetches cached
-#' data for users who have already been looked up, and fetches new data for users
-#' who have not bee looked up yet.
+#' Get (cached) information about Twitter users
 #'
-#' @param user_ids A character vector of user ids (never screen names)
-#' @param cache the cache to interface with
+#' Looks up information pertaining to a vector of provided users. Retrieves
+#' cached data for users who have already been looked up, and fetches new
+#' data for users who have not bee looked up yet from the Twitter API.
+#'
+#' @param user_ids Character vector of Twitter user ids. **DO NOT**
+#'   pass Twitter screen names, as `user_ids` are taken to be unique
+#'   node identifiers.
+#'
+#' @param cache A `cache` object. See [nc_create_cache()].
+#'
+#' @inheritParams rtweet::lookup_users
 #'
 #' @return A tibble where each row corresponds to a User and each column
-#' to one of the User properties. If a user cannot be sampled, should
-#' return nothing for that user. If no users can be sampled, should
-#' return an empty tibble with appropriate columns.
+#'   to one of the User properties. If a user cannot be sampled, should
+#'   return nothing for that user. If no users can be sampled, should
+#'   return an empty tibble with appropriate columns.
 #'
 #' @export
-lookup_users <- function(user_ids, cache) {
+nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit = NULL, verbose = TRUE) {
+
+  cache <- nc_activate_cache(cache_name)
+
   user_data <- db_lookup_users(user_ids, cache)
 
   sampled_data <- filter(user_data, !is.na(.data$sampled_at))
@@ -23,6 +33,7 @@ lookup_users <- function(user_ids, cache) {
   } else {
     upgraded_user_data <- empty_lookup()
   }
+
   if (length(not_in_graph_ids) != 0) {
     new_user_data <- merge_fetch_lookup_update(not_in_graph_ids, cache)
   } else {
@@ -45,15 +56,15 @@ fetch_lookup_update <- function(user_ids, cache) {
   user_info <- fetch_lookup(user_ids)[properties] %>%
     bind_cols(sampled_at = as.character(Sys.time())) %>%
     bind_cols(tibble(user_id = user_ids))
+
   user_info$account_created_at <- as.character(user_info$account_created_at)
 
   tmp <- tempfile()
-  on.exit(file.remove(tmp))
 
   write_csv(user_info, tmp, na = "")
   copy_csv_to_docker(tmp, "lookup.csv", cache$container_name)
 
-  res <- sup4j(
+  query_neo4j(
     glue(
       "LOAD CSV WITH HEADERS FROM 'file:///lookup.csv' AS row MATCH (n:User {{user_id:row.user_id}}) ",
       "{set_string} RETURN n.user_id"
@@ -84,11 +95,12 @@ merge_fetch_lookup_update <- function(user_ids, cache) {
 #'
 #' @return tibble of user data
 fetch_lookup <- function(user_ids) {
-  print("FETCH LOOKUP CALLED")
 
   if (length(user_ids) == 0) {
     return(empty_lookup())
   }
+
+  log_debug("Making API request with rtweet::lookup_users")
 
   rtweet::lookup_users(user_ids)
 }
@@ -109,7 +121,7 @@ db_lookup_users <- function(user_ids, cache) {
   user_string <- glue_collapse(user_ids, sep = '","')
   query <- glue('MATCH (n) WHERE n.user_id in ["{user_string}"] RETURN n')
 
-  user_data <- sup4j(query, cache)
+  user_data <- query_neo4j(query, cache)
 
   # If the users' data does not exist in the DB, return an empty lookup,
   # otherwise return the users' data

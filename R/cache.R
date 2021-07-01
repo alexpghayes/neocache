@@ -1,3 +1,5 @@
+#' Create a cache object
+#'
 #' Creates and saves a new cache instance with the given information.  Also
 #' generates a new Docker container with the given information if one does
 #' not already exist.
@@ -15,88 +17,76 @@
 #' @export
 #' @examples
 #'
-#' example_cache <- new_cache("example_cache")
+#'
+#' \dontrun{
+#' example_cache <- nc_create_cache("example")
 #' example_cache
 #'
-#' cache_sitrep()
+#' nc_sitrep()
 #'
-#' remove_cache(example_cache)
+#' nc_destroy_cache(example_cache)
 #'
-#' cache_sitrep()
+#' nc_sitrep()
+#' }
 #'
-new_cache <- function(cache_name, neo4j_pass = "password", http_port = 7474, bolt_port = 7687, url = NULL) {
-  # Make sure the Docker is running first
+nc_create_cache <- function(cache_name, neo4j_pass = "password", http_port = 7474, bolt_port = 7687, url = NULL) {
+
   if (!find_docker()) {
     stop("Docker does not appear to be running. Please start Docker and then try again.")
   }
 
-  # Make sure the container does not already exist
   if (docker_container_exists(cache_name)) {
     stop(glue("A Docker container by the name of {cache_name} already exists."))
   }
 
-  # Make sure the password does not contain spaces
   if (grepl(" ", neo4j_pass)) {
     stop("The Neo4j password must not contain any spaces. Please try again with a new password.")
   }
 
-  # Check to make sure that the selected ports are currently available
-  if (is_up("127.0.0.1", port = http_port)) {
-    stop("The selected HTTP port is currently in use. Please try another port.")
-  }
-  if (is_up("127.0.0.1", port = bolt_port)) {
-    stop("The selected Bolt port is currently in use. Please try another port.")
+  current_caches <- get_all_caches()
+
+  current_http_ports <- vapply(current_caches, function(x) x$http_port, numeric(1))
+  current_bolt_ports <- vapply(current_caches, function(x) x$bolt_port, numeric(1))
+
+  if (http_port %in% current_http_ports) {
+    stop(glue("http port must be unique amongst caches and port {http_port} is already assigned to another cache."))
   }
 
-  # Warn the user that conflicts may arise when using default ports
-  if (http_port == 7474) {
-    warning(
-      "You have selected the default HTTP port 7474. Conflicts will arise if you try ",
-      "to run multiple caches with the same port selected."
-    )
-  }
-  if (bolt_port == 7687) {
-    warning(
-      "You have selected the default Bolt port 7687. Conflicts will arise if you try ",
-      "to run multiple caches with the same port selected."
-    )
+  if (bolt_port %in% current_bolt_ports) {
+    stop(glue("bolt port must be unique amongst caches and port {bolt_port} is already assigned to another cache."))
   }
 
-  # Tidy up the URL string to make sure that it is formatted properly
-  if (is.null(url)) {
-    url <- paste0("http://localhost:", http_port)
-    message("While this cache is running, the Neo4j web interace will be available at ", url)
-  }
-
-  # Create the Docker container and cache rds file
   log_debug("Creating {cache_name} Docker container...")
-  if (create_docker_container(cache_name, neo4j_pass, http_port, bolt_port)) {
-    log_debug("{cache_name} Docker container successfully created.")
 
-    cache <- list(
-      container_name = cache_name,
-      neo4j_pass = neo4j_pass,
-      url = url,
-      http_port = http_port,
-      bolt_port = bolt_port
-    )
-
-    cache_folder <- rappdirs::app_dir("neocache")$cache()
-    if (!dir.exists(cache_folder)) {
-      dir.create(cache_folder, recursive = TRUE)
-    }
-
-    cache_save_path <- file.path(
-      rappdirs::app_dir("neocache")$cache(),
-      glue("{cache_name}.rds")
-    )
-
-    log_debug(glue("Writing cache rds to {cache_save_path}"))
-    write_rds(cache, cache_save_path)
-    cache
-  } else {
-    stop("Failed to create the {cache_name} Docker container.")
+  if (!create_docker_container(cache_name, neo4j_pass, http_port, bolt_port)) {
+    stop(glue("Failed to create the {cache_name} Docker container."))
   }
+
+  log_debug("{cache_name} Docker container successfully created.")
+
+  cache <- list(
+    container_name = cache_name,
+    neo4j_pass = neo4j_pass,
+    url = glue("http://localhost:{http_port}"),
+    http_port = http_port,
+    bolt_port = bolt_port
+  )
+
+  class(cache) <- "neocache_metadata"
+
+  cache_save_path <- cache_path(cache_name)
+
+  log_debug(glue("Writing cache rds to {cache_save_path}"))
+  write_rds(cache, cache_save_path)
+
+  invisible(NULL)
+}
+
+
+#' @method print neocache_metadata
+#' @export
+print.neocache_metadata <- function(x, ...) {
+  cat(glue("Neocache [name = {x$container_name}, url = {x$url}]"))
 }
 
 
@@ -109,80 +99,98 @@ new_cache <- function(cache_name, neo4j_pass = "password", http_port = 7474, bol
 #' @importFrom readr read_rds
 #' @importFrom rappdirs app_dir
 #'
+#' @keywords internal
+#'
 #' @export
 get_cache <- function(cache_name) {
-  cache_save_path <- file.path(
-    rappdirs::app_dir("neocache")$cache(),
-    glue("{cache_name}.rds")
-  )
 
-  log_debug(glue("Loading cache rds from {cache_save_path}"))
+  # first preference to named cache
+  # second preference to the "use_cache" cache
+  # error
 
-  if (file.exists(cache_save_path)) {
-    read_rds(cache_save_path)
-  } else {
-    stop("This cache does not exist. Try using new_cache(...) instead.")
+  if (!nc_cache_exists(cache_name)) {
+    stop(glue("There is no cache named {cache_name}."))
   }
+
+  read_rds(cache_path(cache_name))
 }
+
+nc_cache_exists <- function(cache_name) {
+  file.exists(cache_path(cache_name))
+}
+
+# TODO: get_cache_and_activate_if_necessary()
 
 
 #' Starts the Docker container and Neo4j instance for the given cache
 #'
 #' @param cache the cache object that the user wishes to start
 #'
+#' @keywords internal
+#'
 #' @export
-load_cache <- function(cache) {
-  # Check to make sure that the selected ports are currently available
+nc_activate_cache <- function(cache_name) {
+
+  # DO NOT PASS A CACHE, pass a cache name
+
+  log_debug("Retrieving cache metadata file ... ")
+
+  cache <- get_cache(cache_name)
+
+  log_debug("Retrieving cache metadata file ... done.")
+  log_debug("Checking if cache is already active ...")
+
+  if (is_active(cache)) {
+    log_debug("Cache is already active, returning cache.")
+    return(invisible(cache))
+  }
+
+  log_debug("Cache in not active, attempting to activate.")
+
   if (is_up("127.0.0.1", port = cache$http_port)) {
     stop("The selected HTTP port is already in use.")
   }
-  if (is_up("127.0.0.1", port = cache$bolt_port)) {
-    stop("The selected Bolt port is already in use.")
+
+  # if (is_up("127.0.0.1", port = cache$bolt_port)) {
+  #   stop("The selected Bolt port is already in use.")
+  # }
+
+  log_debug("Looking for docker ...")
+
+  if (!find_docker()) {
+    stop("Could not find docker. See `find_docker()` for details.")
   }
 
-  # First check if the container is already running
-  if (is_docker_container_running(cache$container_name)) {
-    log_info(glue(
-      "{cache$container_name} Docker container appears to be running already."
-    ))
-  } else {
-    # Check if Docker is running
-    log_info("Checking the status of Docker...")
-    if (!find_docker()) {
-      stop("Docker does not appear to be running. Please start Docker and try again.")
-    }
-    log_info("Docker seems to be running.\n")
+  log_debug("Looking for docker ... found.")
+  log_debug("Starting {cache$container_name} docker container ...")
 
-    # Start the Docker container
-    log_info(glue("Attempting to start {cache$container_name} Docker container..."))
-    if (!start_docker(cache$container_name)) {
-      stop(
-        "This Docker container does not appear to exist. If you create a cache ",
-        "with new_cache(...) this container will be automatically created for you."
+  if (!start_docker(cache$container_name)) {
+    stop(
+      glue(
+        "Docker container {cache$container_name} may not exist. See `nc_create_cache()`."
       )
-    }
-
-    log_info(
-      glue("{cache$container_name} Docker container successfully launched.\n")
     )
   }
 
-  # Wait for Neo4j to launch
-  log_info(
-    "Waiting for Neo4j to come online, this may take a while..."
-  )
+  log_debug("Starting {cache$container_name} docker container ... done.")
+  log_debug("Establishing connection with Neo4J database ...")
 
-  while (!is_up("localhost", port = cache$http_port)) {
-    # Wait to try again
-    Sys.sleep(10)
+  while (!is_active(cache)) {
 
-    # Check to make sure the container is still running before trying again
+    Sys.sleep(3)
+
     if (!is_docker_container_running(cache$container_name)) {
-      stop("Something went wrong and the Docker container shut itself down.")
+      stop("Docker container {cache$container_name} is not longer running, cannot activate cache.")
     }
   }
 
-  log_info("Neo4j successfully started.")
+  log_debug("Establishing connection with Neo4J database ... done.")
+  invisible(cache)
+}
+
+is_active <- function(cache) {
+  con <- neo4j_api_connection(cache)
+  try(con$get_version(), silent = TRUE) == "3.5.21"  # this is a hack
 }
 
 
@@ -190,18 +198,19 @@ load_cache <- function(cache) {
 #'
 #' @param cache the cache object that the user wishes to start
 #'
+#' @keywords internal
+#'
 #' @export
-unload_cache <- function(cache) {
-  # Make sure that the Docker container is actually running
-  if (!is_docker_container_running(cache$container_name)) {
-    stop(glue("The {cache$container_name} Docker container does not appear to be running."))
-  }
+nc_deactivate_cache <- function(cache_name) {
 
-  if (!stop_docker(cache$container_name)) {
-    stop(glue("An error occurred when trying to stop the {cache$container_name} Docker container."))
+  log_debug("Deactivating {cache_name} cache ...")
+
+  if (stop_docker(cache_name)) {
+    log_debug("Deactivating {cache_name} cache ... done.")
+  } else {
+    log_warn("Deactivating {cache_name} cache ... FAILED.")
   }
 }
-
 
 #' Removes the Docker container and cache save file corresponding to the given
 #' cache
@@ -211,40 +220,114 @@ unload_cache <- function(cache) {
 #' @importFrom rappdirs app_dir
 #'
 #' @export
-remove_cache <- function(cache) {
-  # Make sure that the container actually exists
-  if (!docker_container_exists(cache$container_name)) {
-    stop(glue("A Docker container by the name of {cache$container_name} does not appear to exist."))
+nc_destroy_cache <- function(cache_name) {
+
+  if (docker_container_exists(cache_name)) {
+    log_debug("Removing associated Docker container ...")
+
+    nc_deactivate_cache(cache_name)
+
+    if (remove_docker_container(cache_name)) {
+      log_debug("Removing associated Docker container ... done")
+    } else {
+      log_warn("Removing associated Docker container ... FAILED")
+    }
+  } else {
+    log_debug("No associated docker exists.")
   }
 
-  # Make sure that the Docker container is stopped
-  tryCatch(
-    {
-      unload_cache(cache)
-    },
-    error = function(cond) {}
-  )
+  path <- cache_path(cache_name)
 
-  # Remove the Docker container
-  remove_docker_container(cache$container_name)
+  if (file.exists(path)) {
 
-  # Remove the cache .rds save file
-  cache_save_path <- file.path(
-    rappdirs::app_dir("neocache")$cache(),
-    glue("{cache$container_name}.rds")
-  )
-  file.remove(cache_save_path)
+    log_debug("Removing cache metadata file ...")
+
+    if (file.remove(path)) {
+      log_debug("Removing cache metadata file ... done")
+    } else {
+      log_warn("Removing cache metadata file ... FAILED")
+    }
+  }
+
+  invisible(NULL)
 }
 
-cache_sitrep <- function() {
+cache_path <- function(cache_name) {
+
+  cache_folder <- rappdirs::app_dir("neocache")$cache()
+
+  if (!dir.exists(cache_folder)) {
+    dir.create(cache_folder, recursive = TRUE)
+  }
+
+  file.path(
+    cache_folder,
+    glue("{cache_name}.rds")
+  )
+}
+
+#' Remove all data from a cache
+#'
+#' @param cache
+#'
+#' @return
+#' @export
+#'
+nc_empty_cache <- function(cache_name, check_with_me_first = TRUE) {
+  if (check_with_me_first) {
+    if (usethis::ui_yeah("Do you want to empty the {cache_name} cache?")) {
+      cache <- nc_activate_cache(cache_name)
+      query_neo4j("MATCH (n) DETACH DELETE n", cache)
+      return(invisible(NULL))
+    }
+  }
+
+  cache <- nc_activate_cache(cache_name)
+  query_neo4j("MATCH (n) DETACH DELETE n", cache)
+  invisible(NULL)
+}
+
+#' Check if a cache with a given name exists
+#'
+#' @param container_name
+#'
+#' @return
+#' @export
+#'
+nc_cache_exists <- function(cache_name) {
+  docker_container_exists(cache_name)
+}
+
+#' Check caches with saved information
+#'
+#' @export
+#'
+nc_sitrep <- function() {
+
+  caches <- get_all_caches()
+
+  cli::cli_h1("Caches")
+
+  if (length(caches) < 1) {
+    cat("  - No caches yet")
+  }
+
+
+  for (cache in caches) {
+    status <- if (is_active(cache)) "active" else "not active"
+    cat(glue("  - {cache$container_name} ({status}) \n", .trim = FALSE))
+  }
+
+  invisible(NULL)
+}
+
+get_all_caches <- function() {
+
   cache_metadata_files <- list.files(
     path = rappdirs::app_dir("neocache")$cache(),
-    pattern = "*.\\.rds"
+    pattern = "*.\\.rds",
+    full.names = TRUE
   )
 
-  if (length(cache_metadata_files) > 0) {
-    message(glue("We found the following cache files: {cache_metadata_files}"))
-  } else {
-    message("No neocache cache objects found.")
-  }
+  lapply(cache_metadata_files, read_rds)
 }

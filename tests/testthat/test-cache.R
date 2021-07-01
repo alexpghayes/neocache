@@ -1,8 +1,7 @@
-context("Cache functions")
 library(neocache)
 library(logger)
-logger::log_threshold("FATAL")
 
+log_threshold("FATAL")
 
 # This function ensures that the Docker containers we generate have unique names
 random_name <- function(n = 20) {

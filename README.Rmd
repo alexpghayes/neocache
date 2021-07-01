@@ -35,5 +35,5 @@ devtools::install_github("alexpghayes/neocache")
 ```{r}
 library(neocache)
 
-print_cache()
+cache_sitrep()
 ```
