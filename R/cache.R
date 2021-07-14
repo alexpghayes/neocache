@@ -15,19 +15,6 @@
 #' @importFrom rappdirs app_dir
 #'
 #' @export
-#' @examples
-#'
-#'
-#' \dontrun{
-#' example_cache <- nc_create_cache("example")
-#' example_cache
-#'
-#' nc_sitrep()
-#'
-#' nc_destroy_cache(example_cache)
-#'
-#' nc_sitrep()
-#' }
 #'
 nc_create_cache <- function(cache_name, neo4j_pass = "password", http_port = 7474, bolt_port = 7687, url = NULL) {
 
@@ -113,10 +100,6 @@ get_cache <- function(cache_name) {
   }
 
   read_rds(cache_path(cache_name))
-}
-
-nc_cache_exists <- function(cache_name) {
-  file.exists(cache_path(cache_name))
 }
 
 # TODO: get_cache_and_activate_if_necessary()
@@ -268,7 +251,7 @@ cache_path <- function(cache_name) {
 
 #' Remove all data from a cache
 #'
-#' @param cache
+#' @param cache_name TODO
 #'
 #' @return
 #' @export
@@ -289,7 +272,7 @@ nc_empty_cache <- function(cache_name, check_with_me_first = TRUE) {
 
 #' Check if a cache with a given name exists
 #'
-#' @param container_name
+#' @param cache_name
 #'
 #' @return
 #' @export

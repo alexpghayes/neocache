@@ -10,7 +10,7 @@
 #'
 #' @importFrom dplyr bind_rows
 #' @export
-get_followers <- function(user_ids, cache_name, n = 150) {
+nc_get_followers <- function(user_ids, cache_name, n = 150) {
   # here we will need to query twice: once to ask who we actually
   # have *complete* followship edges for, and then a second time to get
   # those followship edges
@@ -63,7 +63,7 @@ merge_then_fetch_connect_followers <- function(user_ids, n, cache) {
     mutate(to = to_id)
 
   ### 2.
-  docker_bulk_merge_users(c(user_ids, edge_list$from), cache)
+  db_add_new_users(c(user_ids, edge_list$from), cache)
 
   ### 3.
   return_val <- docker_bulk_connect_nodes(edge_list, cache)

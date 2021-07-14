@@ -28,15 +28,3 @@ Creates and saves a new cache instance with the given information.  Also
 generates a new Docker container with the given information if one does
 not already exist.
 }
-\examples{
-
-example_cache <- nc_create_cache("example")
-example_cache
-
-nc_sitrep()
-
-nc_destroy_cache(example_cache)
-
-nc_sitrep()
-
-}

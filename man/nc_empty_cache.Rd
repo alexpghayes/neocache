@@ -7,7 +7,7 @@
 nc_empty_cache(cache_name, check_with_me_first = TRUE)
 }
 \arguments{
-\item{cache}{}
+\item{cache_name}{TODO}
 }
 \value{
 

@@ -8,15 +8,16 @@
 #' from the user in the 'from' column to the user in to 'to' column
 #'
 #' @export
-nc_get_friends <- function(users, cache_name, n = 5000, retryonratelimit = NULL, cursor = "-1", verbose = TRUE, token = NULL) {
+nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = NULL, cursor = "-1", verbose = TRUE, token = NULL) {
   # here we will need to query twice: once to ask who we actually
   # have *complete* friendship edges for, and then a second time to get
   # those friendship edges
 
   cache <- nc_activate_cache(cache_name)
 
-  user_ids <- users
   status <- friend_sampling_status(user_ids, cache)
+
+  # status might be NULL for any set of these things
 
   # sample the friends of all the users w/o sampled friends
   new_edges <- merge_then_fetch_connect_friends(status$not_in_graph, n, cache)
@@ -27,7 +28,7 @@ nc_get_friends <- function(users, cache_name, n = 5000, retryonratelimit = NULL,
   # we guarantee that edges are unique somehow before this, but if not
   # we can use dplyr::distinct(), although this is an expensive operation
 
-  bind_rows(new_edges, upgraded_edges, existing_edges)
+  bind_rows(empty_user_edges(), new_edges, upgraded_edges, existing_edges)
 }
 
 
@@ -46,21 +47,18 @@ merge_then_fetch_connect_friends <- function(user_ids, n, cache) {
   # set sampled_friends_at to Sys.time()
   # sampled_at and sampled_followers_at default to NULL
   # return friends of each user
-  user_ids <- c(user_ids)
 
-  if (length(user_ids) <= 1 && is.na(user_ids)) {
+  if (length(user_ids) <= 1) {
     return(empty_user_edges())
   }
 
-  # print("Using rtweet")
-
-  ### 1.
   sample_time <- Sys.time()
+
   edge_list <- rtweet::get_friends(user_ids, n = n) %>%
     rename(from = .data$user, to = .data$ids)
 
   ### 2.
-  docker_bulk_merge_users(c(user_ids, edge_list$to), cache)
+  db_add_new_users(c(user_ids, edge_list$to), cache)
 
   ### 3.
   docker_bulk_connect_nodes(edge_list, cache)
@@ -86,27 +84,66 @@ merge_then_fetch_connect_friends <- function(user_ids, n, cache) {
 #' graph, (2) are in the graph but their friends have not been sampled,
 #' (3) are in the graph and have sampled friends
 friend_sampling_status <- function(user_ids, cache) {
-  # generate based on queries of user.sampled_friends_at node property
+
+  # might be a tibble with zero rows if no users are present in graph
   present_users <- db_lookup_users(user_ids, cache)
+
   not_in_graph <- setdiff(user_ids, present_users$user_id)
+
   unsampled_users <- present_users %>%
     filter(is.na(.data$sampled_friends_at)) %>%
     pull(.data$user_id)
+
   sampled_users <- setdiff(user_ids, c(unsampled_users, not_in_graph))
 
-  if (length(not_in_graph) == 0) {
-    not_in_graph <- NA
-  }
-  if (length(unsampled_users) == 0) {
-    unsampled_users <- NA
-  }
-  if (length(sampled_users) == 0) {
-    sampled_users <- NA
-  }
-
+  # all of these take value character(0) when empty
   list(
     not_in_graph = not_in_graph,
     sampled_friends_at_is_null = unsampled_users,
     sampled_friends_at_not_null = sampled_users
   )
+}
+
+#' Gets the friends for the given user that already exist in the DB.
+#'
+#' @param user_ids a list of user_ids who are already in the DB and
+#' already have friend edge data
+#' @param cache the cache to interface with
+#'
+#' @return a 2-column tibble edge list with entries from the users in user_ids
+#' to their friends
+db_get_friends <- function(user_ids, cache) {
+  if (is.na(user_ids)) {
+    return(empty_user_edges())
+  }
+
+  query_neo4j(
+    paste0(
+      'WITH "MATCH (from:User),(to:User) WHERE from.user_id in [\\\'',
+      glue_collapse(user_ids, sep = "\\',\\'"),
+      '\\\'] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id" AS query ',
+      'CALL apoc.export.csv.query(query, "get_friends.csv", {}) YIELD file RETURN file'
+    ),
+    cache
+  )
+
+  tmp <- tempfile()
+
+  copy_csv_from_docker("get_friends.csv", tmp, cache$container_name)
+
+  on.exit(file.remove(tmp))
+
+  results <- readr::read_csv(
+    tmp,
+    col_types = readr::cols(
+      from.user_id = readr::col_character(),
+      to.user_id = readr::col_character()
+    )
+  )
+
+  if (length(results) != 2) {
+    return(empty_user_edges())
+  }
+
+  tibble(from = results$from.user_id, to = results$to.user_id)
 }

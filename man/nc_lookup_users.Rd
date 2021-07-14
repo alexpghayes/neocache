@@ -4,12 +4,37 @@
 \alias{nc_lookup_users}
 \title{Get (cached) information about Twitter users}
 \usage{
-nc_lookup_users(user_ids, cache_name = NULL)
+nc_lookup_users(
+  user_ids,
+  cache_name,
+  token = NULL,
+  retryonratelimit = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{user_ids}{Character vector of Twitter user ids. \strong{DO NOT}
 pass Twitter screen names, as \code{user_ids} are taken to be unique
 node identifiers.}
+
+\item{token}{Expert use only. Use this to override authentication for
+a single API call. In most cases you are better off changing the
+default for all calls. See \code{\link[rtweet:auth_as]{auth_as()}} for details.}
+
+\item{retryonratelimit}{If \code{TRUE}, and a rate limit is exhausted, will wait
+until it refreshes. Most twitter rate limits refresh every 15 minutes.
+If \code{FALSE}, and the rate limit is exceeded, the function will terminate
+early with a warning; you'll still get back all results received up to
+that point. The default value, \code{NULL}, consults the option
+\code{rtweet.retryonratelimit} so that you can globally set it to \code{TRUE},
+if desired.
+
+If you expect a query to take hours or days to perform, you should not
+rely soley on \code{retryonratelimit} because it does not handle other common
+failure modes like temporarily losing your internet connection.}
+
+\item{verbose}{Show progress bars and other messages indicating current
+progress?}
 
 \item{cache}{A \code{cache} object. See \code{\link[=nc_create_cache]{nc_create_cache()}}.}
 }

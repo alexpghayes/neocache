@@ -57,63 +57,19 @@ docker_bulk_connect_nodes <- function(tbl, cache) {
 #'
 #' @param user_ids a vector of user_ids to generate MERGE queries for
 #' @param cache the cache to interface with
-docker_bulk_merge_users <- function(user_ids, cache) {
+db_add_new_users <- function(user_ids, cache) {
   tmp <- tempfile()
 
   cat(paste0("user_id\n", paste0('"', user_ids, '"', collapse = "\n")), file = tmp)
 
   copy_csv_to_docker(tmp, "data.csv", cache$container_name)
 
-  on.exit(file.remove(tmp))
-
   add_qry <- glue("LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row MERGE (n:User {{user_id:row.user_id}})")
   query_neo4j(add_qry, cache)
 }
 
 
-#' Gets the friends for the given user that already exist in the DB.
-#'
-#' @param user_ids a list of user_ids who are already in the DB and
-#' already have friend edge data
-#' @param cache the cache to interface with
-#'
-#' @return a 2-column tibble edge list with entries from the users in user_ids
-#' to their friends
-db_get_friends <- function(user_ids, cache) {
-  if (is.na(user_ids)) {
-    return(empty_user_edges())
-  }
 
-  query_neo4j(
-    paste0(
-      'WITH "MATCH (from:User),(to:User) WHERE from.user_id in [\\\'',
-      glue_collapse(user_ids, sep = "\\',\\'"),
-      '\\\'] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id" AS query ',
-      'CALL apoc.export.csv.query(query, "get_friends.csv", {}) YIELD file RETURN file'
-    ),
-    cache
-  )
-
-  tmp <- tempfile()
-
-  copy_csv_from_docker("get_friends.csv", tmp, cache$container_name)
-
-  on.exit(file.remove(tmp))
-
-  results <- readr::read_csv(
-    tmp,
-    col_types = readr::cols(
-      from.user_id = readr::col_character(),
-      to.user_id = readr::col_character()
-    )
-  )
-
-  if (length(results) != 2) {
-    return(empty_user_edges())
-  }
-
-  tibble(from = results$from.user_id, to = results$to.user_id)
-}
 
 
 #' Gets the followers for the given user that already exist in the DB.

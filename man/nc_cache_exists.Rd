@@ -7,7 +7,7 @@
 nc_cache_exists(cache_name)
 }
 \arguments{
-\item{container_name}{}
+\item{cache_name}{}
 }
 \value{
 
