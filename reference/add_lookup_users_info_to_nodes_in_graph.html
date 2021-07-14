@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Checks whether friend data has already been sampled for the provided
-vector of users. — friend_sampling_status • neocache</title>
+<title>Fetches the user's lookup_users data then updates their info in the graph. — add_lookup_users_info_to_nodes_in_graph • neocache</title>
 
 
 <!-- jquery -->
@@ -40,10 +39,8 @@ vector of users. — friend_sampling_status • neocache</title>
 
 
 
-<meta property="og:title" content="Checks whether friend data has already been sampled for the provided
-vector of users. — friend_sampling_status" />
-<meta property="og:description" content="Checks whether friend data has already been sampled for the provided
-vector of users." />
+<meta property="og:title" content="Fetches the user's lookup_users data then updates their info in the graph. — add_lookup_users_info_to_nodes_in_graph" />
+<meta property="og:description" content="Fetches the user's lookup_users data then updates their info in the graph." />
 
 
 
@@ -123,25 +120,23 @@ vector of users." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Checks whether friend data has already been sampled for the provided
-vector of users.</h1>
-    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/get_friends.R'><code>R/get_friends.R</code></a></small>
-    <div class="hidden name"><code>friend_sampling_status.Rd</code></div>
+    <h1>Fetches the user's lookup_users data then updates their info in the graph.</h1>
+    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/lookup_users.R'><code>R/lookup_users.R</code></a></small>
+    <div class="hidden name"><code>add_lookup_users_info_to_nodes_in_graph.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Checks whether friend data has already been sampled for the provided
-vector of users.</p>
+    <p>Fetches the user's lookup_users data then updates their info in the graph.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>friend_sampling_status</span><span class='op'>(</span><span class='va'>user_ids</span>, <span class='va'>cache</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>add_lookup_users_info_to_nodes_in_graph</span><span class='op'>(</span><span class='va'>user_ids</span>, <span class='va'>cache</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>user_ids</th>
-      <td><p>to fetch the sampling status for</p></td>
+      <td><p>a vector of user_ids. do NOT pass screen names</p></td>
     </tr>
     <tr>
       <th>cache</th>
@@ -151,9 +146,7 @@ vector of users.</p>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a list of all users who either (1) are not currently in the
-graph, (2) are in the graph but their friends have not been sampled,
-(3) are in the graph and have sampled friends</p>
+    <p>tibble of user data</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">neocache</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.0.0.9000</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.0.0.9001</span>
       </span>
     </div>
 
@@ -145,6 +145,18 @@
       <tr>
         
         <td>
+          <p><code><a href="add_lookup_users_info_to_nodes_in_graph.html">add_lookup_users_info_to_nodes_in_graph()</a></code> </p>
+        </td>
+        <td><p>Fetches the user's lookup_users data then updates their info in the graph.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="db_add_new_users.html">db_add_new_users()</a></code> </p>
+        </td>
+        <td><p>Merges a batch of nodes to the graph with nothing but user_id's</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="db_get_followers.html">db_get_followers()</a></code> </p>
         </td>
         <td><p>Gets the followers for the given user that already exist in the DB.</p></td>
@@ -170,27 +182,9 @@ tbl argument.</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="docker_bulk_merge_users.html">docker_bulk_merge_users()</a></code> </p>
-        </td>
-        <td><p>Merges a batch of nodes to the graph with nothing but user_id's</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="fetch_followers.html">fetch_followers()</a></code> </p>
         </td>
         <td><p>Fetches the followers of the provided user ID's via <code>rtweet</code>.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="fetch_lookup.html">fetch_lookup()</a></code> </p>
-        </td>
-        <td><p>Takes in a vector of user_ids and returns their lookup_users info.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="fetch_lookup_update.html">fetch_lookup_update()</a></code> </p>
-        </td>
-        <td><p>Fetches the user's lookup_users data then updates their info in the graph.</p></td>
       </tr><tr>
         
         <td>
@@ -205,20 +199,6 @@ vector of users.</p></td>
         </td>
         <td><p>Checks whether friend data has already been sampled for the provided
 vector of users.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="get_followers.html">get_followers()</a></code> </p>
-        </td>
-        <td><p>Fetches the follows of all of the users in a provided vector. Returns
-the follower relationships in the form of an edge list.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="merge_fetch_lookup_update.html">merge_fetch_lookup_update()</a></code> </p>
-        </td>
-        <td><p>Creates nodes for the given user_ids in the graph, then fetches their
-info and updates that info in the graph.</p></td>
       </tr><tr>
         
         <td>
@@ -268,6 +248,13 @@ cache</p></td>
           <p><code><a href="nc_empty_cache.html">nc_empty_cache()</a></code> </p>
         </td>
         <td><p>Remove all data from a cache</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="nc_get_followers.html">nc_get_followers()</a></code> </p>
+        </td>
+        <td><p>Fetches the follows of all of the users in a provided vector. Returns
+the follower relationships in the form of an edge list.</p></td>
       </tr><tr>
         
         <td>
