@@ -19,7 +19,6 @@
 #'
 #' @export
 nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit = NULL, verbose = TRUE) {
-
   cache <- nc_activate_cache(cache_name)
 
   log_debug("Looking for users in Neo4J database ...")
@@ -40,13 +39,12 @@ nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit
 
   if (length(not_sampled_ids) != 0) {
     log_trace(glue("Need to get user data from API for: {not_sampled_ids}"))
-    upgraded_user_data <- add_lookup_users_info_to_nodes_in_graph(not_sampled_ids, cache)
+    upgraded_user_data <- add_lookup_users_info_to_nodes_in_graph(not_sampled_ids, token, retryonratelimit, verbose, cache)
 
     log_formatter(formatter_pander)
     log_trace("upgraded_user_data key columns:")
     log_trace(select(upgraded_user_data, user_id, screen_name, sampled_at), style = "simple")
     log_formatter(formatter_glue)
-
   } else {
     log_trace("Did not need to update any nodes already in Neo4J.")
     upgraded_user_data <- empty_lookup()
@@ -55,7 +53,7 @@ nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit
   if (length(not_in_graph_ids) != 0) {
     log_trace(glue("Need to add entirely new nodes: {not_in_graph_ids}"))
     db_add_new_users(not_in_graph_ids, cache)
-    new_user_data <- add_lookup_users_info_to_nodes_in_graph(not_in_graph_ids, cache)
+    new_user_data <- add_lookup_users_info_to_nodes_in_graph(not_in_graph_ids, token, retryonratelimit, verbose, cache)
 
     log_formatter(formatter_pander)
     log_trace("new_user_data key columns:")
@@ -83,7 +81,7 @@ nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit
 #' @param cache the cache to interface with
 #'
 #' @return tibble of user data
-add_lookup_users_info_to_nodes_in_graph <- function(user_ids, cache) {
+add_lookup_users_info_to_nodes_in_graph <- function(user_ids, token, retryonratelimit, verbose, cache) {
 
   # NOTE: do not set friends_sampled_at or followers_sampled_at here -- we need
   # to preserve whatever value those have in the database already
@@ -96,13 +94,39 @@ add_lookup_users_info_to_nodes_in_graph <- function(user_ids, cache) {
     return(empty_lookup())
   }
 
-  log_debug("Making API request with rtweet::lookup_users")
 
-  user_info_raw <- rtweet::lookup_users(user_ids)  # TODO: pass twitter API arguments
+
+  # need to wrap in tryCatch and handle API failures
+
+  tryCatch(
+    expr = {
+
+      log_debug("Making API request with rtweet::lookup_users")
+
+      user_info_raw <- rtweet::lookup_users(
+        users = user_ids,
+        token = token,
+        retryonratelimit = retryonratelimit,
+        verbose = verbose
+      )
+    },
+    error = function(e) {
+
+      # this will fail when all user_ids no longer exist
+
+
+
+      print(str(e))
+      print(class(e))
+
+      stop(e)
+    }
+  )
 
   log_debug(glue("Received information on {nrow(user_info_raw)} users."))
 
-  user_info <- user_info_raw %>%
+  user_info <- tibble(user_id = user_ids) %>%
+    left_join(user_info_raw, by = "user_id") %>%
     select(user_id, all_of(properties)) %>%
     mutate(
       sampled_at = as.character(Sys.time()),
