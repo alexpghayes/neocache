@@ -39,7 +39,7 @@ nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit
   not_sampled_ids <- filter(user_data, is.na(.data$sampled_at))$user_id
 
   if (length(not_sampled_ids) != 0) {
-    log_trace(glue("Needed to get data from API for: {not_sampled_ids}"))
+    log_trace(glue("Need to get user data from API for: {not_sampled_ids}"))
     upgraded_user_data <- add_lookup_users_info_to_nodes_in_graph(not_sampled_ids, cache)
 
     log_formatter(formatter_pander)
@@ -88,7 +88,9 @@ add_lookup_users_info_to_nodes_in_graph <- function(user_ids, cache) {
   # NOTE: do not set friends_sampled_at or followers_sampled_at here -- we need
   # to preserve whatever value those have in the database already
 
-  log_debug(glue("Need to request information on {length(user_ids)} users from API"))
+  # assumes all user_ids already exist in the Neo4J database
+
+  log_debug(glue("Need to request user data on {length(user_ids)} users from API"))
 
   if (length(user_ids) == 0) {
     return(empty_lookup())

@@ -38,8 +38,6 @@ docker_bulk_connect_nodes <- function(tbl, cache) {
 
   copy_csv_to_docker(tmp, "data.csv", cache$container_name)
 
-  on.exit(file.remove(tmp))
-
   # Add a node for each of the root user's friends and connect the root user to them
   ## This query runs on joe50k in ~2.75 minutes
   connect_qry <- glue(

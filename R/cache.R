@@ -145,7 +145,7 @@ nc_activate_cache <- function(cache_name) {
   }
 
   log_debug("Looking for docker ... found.")
-  log_debug("Starting {cache$container_name} docker container ...")
+  log_debug(glue("Starting {cache$container_name} docker container ..."))
 
   if (!start_docker(cache$container_name)) {
     stop(
@@ -155,7 +155,7 @@ nc_activate_cache <- function(cache_name) {
     )
   }
 
-  log_debug("Starting {cache$container_name} docker container ... done.")
+  log_debug(glue("Starting {cache$container_name} docker container ... done."))
   log_debug("Establishing connection with Neo4J database ...")
 
   while (!is_active(cache)) {
@@ -163,7 +163,7 @@ nc_activate_cache <- function(cache_name) {
     Sys.sleep(3)
 
     if (!is_docker_container_running(cache$container_name)) {
-      stop("Docker container {cache$container_name} is not longer running, cannot activate cache.")
+      stop(glue("Docker container {cache$container_name} is not longer running, cannot activate cache."))
     }
   }
 

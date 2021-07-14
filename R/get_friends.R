@@ -15,18 +15,59 @@ nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = NU
 
   cache <- nc_activate_cache(cache_name)
 
+  log_debug("Getting friend sampling status ..")
+
   status <- friend_sampling_status(user_ids, cache)
 
-  # status might be NULL for any set of these things
+  log_debug(
+    glue(
+      "Sampling status summary: {length(status$sampled_friends_at_not_null)} sampled / ",
+      "{length(status$sampled_friends_at_is_null)} unsampled / ",
+      "{length(status$not_in_graph)} new",
+      .trim = FALSE
+    )
+  )
 
-  # sample the friends of all the users w/o sampled friends
-  new_edges <- merge_then_fetch_connect_friends(status$not_in_graph, n, cache)
-  upgraded_edges <- merge_then_fetch_connect_friends(status$sampled_friends_at_is_null, n, cache)
+  if (length(status$not_in_graph) > 0) {
+    log_trace("Adding new users to graph ...")
+    db_add_new_users(status$not_in_graph, cache)
+    log_trace("Adding new users to graph ... done.")
+  }
+
+  # status might be character(0) for any set of these things
+
+  new_edges <- add_friend_edges_to_nodes_in_graph(status$not_in_graph,
+    n = n,
+    retryonratelimit = retryonratelimit,
+    cursor = cursor,
+    verbose = verbose,
+    token = token,
+    cache = cache
+  )
+
+  upgraded_edges <- add_friend_edges_to_nodes_in_graph(status$sampled_friends_at_is_null,
+    n = n,
+    retryonratelimit = retryonratelimit,
+    cursor = cursor,
+    verbose = verbose,
+    token = token,
+    cache = cache
+  )
+
+  log_trace("Getting cached edges ...")
   existing_edges <- db_get_friends(status$sampled_friends_at_not_null, cache)
+  log_trace("Getting cached edges ... done.")
 
   # need to be careful about duplicate edges here. ideally
   # we guarantee that edges are unique somehow before this, but if not
   # we can use dplyr::distinct(), although this is an expensive operation
+
+  log_trace(glue("new_edges is {nrow(new_edges)} x {ncol(new_edges)} with type signature"))
+  log_trace(type_signature(new_edges))
+  log_trace(glue("upgraded_edges is {nrow(upgraded_edges)} x {ncol(upgraded_edges)} with type signature"))
+  log_trace(type_signature(upgraded_edges))
+  log_trace(glue("existing_edges is {nrow(existing_edges)} x {ncol(existing_edges)} with type signature"))
+  log_trace(type_signature(existing_edges))
 
   bind_rows(empty_user_edges(), new_edges, upgraded_edges, existing_edges)
 }
@@ -43,33 +84,35 @@ nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = NU
 #' @param cache the cache to interface with
 #'
 #' @return a 2-column tibble edge list from user_ids to their friends
-merge_then_fetch_connect_friends <- function(user_ids, n, cache) {
-  # set sampled_friends_at to Sys.time()
-  # sampled_at and sampled_followers_at default to NULL
-  # return friends of each user
+add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cursor, verbose, token, cache) {
 
-  if (length(user_ids) <= 1) {
+  if (length(user_ids) < 1) {
     return(empty_user_edges())
   }
 
   sample_time <- Sys.time()
 
-  edge_list <- rtweet::get_friends(user_ids, n = n) %>%
+  edge_list <- rtweet::get_friends(
+    users = user_ids,
+    n = n,
+    retryonratelimit = retryonratelimit,
+    cursor = cursor,
+    parse = TRUE,
+    verbose = verbose,
+    token = token
+  ) %>%
     rename(from = .data$user, to = .data$ids)
 
-  ### 2.
   db_add_new_users(c(user_ids, edge_list$to), cache)
 
-  ### 3.
   docker_bulk_connect_nodes(edge_list, cache)
 
-  ### 4.
-  update_qry <- glue(
+  set_sampled_at_query <- glue(
     'WITH ["', glue_collapse(user_ids, sep = '","'), '"] AS user_ids UNWIND user_ids AS id ',
     'MATCH (n:User {{user_id:id}}) SET n.sampled_friends_at = "{sample_time}"'
   )
 
-  query_neo4j(update_qry, cache)
+  query_neo4j(set_sampled_at_query, cache)
 
   edge_list
 }
@@ -113,25 +156,23 @@ friend_sampling_status <- function(user_ids, cache) {
 #' @return a 2-column tibble edge list with entries from the users in user_ids
 #' to their friends
 db_get_friends <- function(user_ids, cache) {
-  if (is.na(user_ids)) {
+
+  if (length(user_ids) < 1) {
     return(empty_user_edges())
   }
 
-  query_neo4j(
-    paste0(
-      'WITH "MATCH (from:User),(to:User) WHERE from.user_id in [\\\'',
-      glue_collapse(user_ids, sep = "\\',\\'"),
-      '\\\'] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id" AS query ',
-      'CALL apoc.export.csv.query(query, "get_friends.csv", {}) YIELD file RETURN file'
-    ),
-    cache
+  friend_query <- paste0(
+    'WITH "MATCH (from:User),(to:User) WHERE from.user_id in [\\\'',
+    glue_collapse(user_ids, sep = "\\',\\'"),
+    '\\\'] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id" AS query ',
+    'CALL apoc.export.csv.query(query, "get_friends.csv", {}) YIELD file RETURN file'
   )
+
+  query_neo4j(friend_query, cache)
 
   tmp <- tempfile()
 
   copy_csv_from_docker("get_friends.csv", tmp, cache$container_name)
-
-  on.exit(file.remove(tmp))
 
   results <- readr::read_csv(
     tmp,
@@ -141,7 +182,7 @@ db_get_friends <- function(user_ids, cache) {
     )
   )
 
-  if (length(results) != 2) {
+  if (ncol(results) != 2) {
     return(empty_user_edges())
   }
 
