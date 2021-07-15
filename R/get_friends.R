@@ -85,23 +85,52 @@ nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = NU
 #'
 #' @return a 2-column tibble edge list from user_ids to their friends
 add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cursor, verbose, token, cache) {
-
   if (length(user_ids) < 1) {
     return(empty_user_edges())
   }
 
   sample_time <- Sys.time()
 
-  edge_list <- rtweet::get_friends(
-    users = user_ids,
-    n = n,
-    retryonratelimit = retryonratelimit,
-    cursor = cursor,
-    parse = TRUE,
-    verbose = verbose,
-    token = token
-  ) %>%
-    rename(from = .data$user, to = .data$ids)
+  # make sure data returned by API is in the right scope
+  edge_list <- NULL
+
+  tryCatch(
+    expr = {
+      log_debug("Making API request with rtweet::get_friends")
+
+      edge_list <<- rtweet::get_friends(
+        users = user_ids,
+        n = n,
+        retryonratelimit = retryonratelimit,
+        cursor = cursor,
+        parse = TRUE,
+        verbose = verbose,
+        token = token
+      ) %>%
+        rename(from = .data$user, to = .data$ids)
+    },
+    error = function(cnd) {
+
+      # to understand HTTPs codes returned by Twitter see
+      # https://developer.twitter.com/en/support/twitter-api/error-troubleshooting
+
+      msg <- conditionMessage(cnd)
+
+      log_warn(glue("Failure making API request. Condition message: {msg}"))
+      log_debug("Call of failed API request: ")
+      log_debug(conditionCall(cnd))
+
+      # don't want to match on actual text of error message, which may change
+      # with user locale / language settings. blargh
+
+      if (grepl("401", msg)) {
+        log_warn("Treating 401 error as invalid user id, adding to Neo4J with missing data, and returning empty lookup.")
+        edge_list <<- empty_user_edges()
+      } else {
+        stop(cnd)
+      }
+    }
+  )
 
   db_add_new_users(c(user_ids, edge_list$to), cache)
 
@@ -156,7 +185,6 @@ friend_sampling_status <- function(user_ids, cache) {
 #' @return a 2-column tibble edge list with entries from the users in user_ids
 #' to their friends
 db_get_friends <- function(user_ids, cache) {
-
   if (length(user_ids) < 1) {
     return(empty_user_edges())
   }

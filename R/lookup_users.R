@@ -19,6 +19,15 @@
 #'
 #' @export
 nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit = NULL, verbose = TRUE) {
+
+  if (any(is.na(user_ids))) {
+    stop("`user_ids` must not contain any `NA` entries.")
+  }
+
+  if (!is.character(user_ids)) {
+    stop("`user_ids` must be a character vector.")
+  }
+
   cache <- nc_activate_cache(cache_name)
 
   log_debug("Looking for users in Neo4J database ...")
@@ -51,7 +60,7 @@ nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit
   }
 
   if (length(not_in_graph_ids) != 0) {
-    log_trace(glue("Need to add entirely new nodes: {not_in_graph_ids}"))
+    log_trace(glue("Need to add entirely new node(s): {not_in_graph_ids}", sep = "\n"))
     db_add_new_users(not_in_graph_ids, cache)
     new_user_data <- add_lookup_users_info_to_nodes_in_graph(not_in_graph_ids, token, retryonratelimit, verbose, cache)
 
@@ -94,36 +103,48 @@ add_lookup_users_info_to_nodes_in_graph <- function(user_ids, token, retryonrate
     return(empty_lookup())
   }
 
-
-
-  # need to wrap in tryCatch and handle API failures
-
   tryCatch(
     expr = {
 
       log_debug("Making API request with rtweet::lookup_users")
 
-      user_info_raw <- rtweet::lookup_users(
+      user_info_raw <<- rtweet::lookup_users(
         users = user_ids,
         token = token,
         retryonratelimit = retryonratelimit,
         verbose = verbose
       )
+
+      if (is.null(user_info_raw)) {
+        log_fatal("user_info_raw is `NULL` after API call.")
+      }
     },
-    error = function(e) {
+    error = function(cnd) {
 
-      # this will fail when all user_ids no longer exist
+      # to understand HTTPs codes returned by Twitter see
+      # https://developer.twitter.com/en/support/twitter-api/error-troubleshooting
 
+      msg <- conditionMessage(cnd)
 
+      log_warn(glue("Failure making API request. Condition message: {msg}"))
+      log_debug("Call of failed API request: ")
+      log_debug(conditionCall(cnd))
 
-      print(str(e))
-      print(class(e))
+      # don't want to match on actual text of error message, which may change
+      # with user locale / language settings. blargh
 
-      stop(e)
+      if (grepl("404", msg)) {
+        log_warn("Treating 404 error as invalid user id, adding to Neo4J with missing data, and returning empty lookup.")
+        user_info_raw <<- empty_lookup()
+      } else {
+        stop(cnd)
+      }
     }
   )
 
   log_debug(glue("Received information on {nrow(user_info_raw)} users."))
+  log_trace("user_info_raw is: ")
+  log_trace(select(user_info_raw, user_id, screen_name), style = "simple")
 
   user_info <- tibble(user_id = user_ids) %>%
     left_join(user_info_raw, by = "user_id") %>%
