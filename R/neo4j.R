@@ -30,8 +30,10 @@ query_neo4j <- function(query, cache) {
 
   withCallingHandlers(
     message = function(cnd) {
-      if (conditionMessage(cnd) == "No data returned.")
+
+      if (grepl("No data returned.", conditionMessage(cnd), )) {
         invokeRestart("muffleMessage")
+      }
     },
     call_neo4j(query, con)
   )
