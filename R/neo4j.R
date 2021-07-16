@@ -16,7 +16,6 @@ neo4j_api_connection <- function(cache) {
 #'
 #' @keywords internal
 query_neo4j <- function(query, cache) {
-
   con <- neo4j_api_connection(cache)
   suppressMessages(call_neo4j(query, con))
 }

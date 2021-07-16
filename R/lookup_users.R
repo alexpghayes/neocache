@@ -18,8 +18,7 @@
 #'   return an empty tibble with appropriate columns.
 #'
 #' @export
-nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit = NULL, verbose = TRUE) {
-
+nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit = TRUE, verbose = TRUE) {
   if (any(is.na(user_ids))) {
     stop("`user_ids` must not contain any `NA` entries.")
   }
@@ -27,6 +26,8 @@ nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit
   if (!is.character(user_ids)) {
     stop("`user_ids` must be a character vector.")
   }
+
+  log_trace(glue("nc_lookup_user(): {user_ids}"))
 
   cache <- nc_activate_cache(cache_name)
 
@@ -91,6 +92,7 @@ nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit
 #'
 #' @return tibble of user data
 add_lookup_users_info_to_nodes_in_graph <- function(user_ids, token, retryonratelimit, verbose, cache) {
+  log_trace(glue("add_lookup_users_info_to_nodes_in_graph(): {user_ids}"))
 
   # NOTE: do not set friends_sampled_at or followers_sampled_at here -- we need
   # to preserve whatever value those have in the database already
@@ -105,7 +107,6 @@ add_lookup_users_info_to_nodes_in_graph <- function(user_ids, token, retryonrate
 
   tryCatch(
     expr = {
-
       log_debug("Making API request with rtweet::lookup_users")
 
       user_info_raw <<- rtweet::lookup_users(
@@ -178,6 +179,8 @@ add_lookup_users_info_to_nodes_in_graph <- function(user_ids, token, retryonrate
 #'
 #' @return a tibble with any existing data for user_ids
 db_lookup_users <- function(user_ids, cache) {
+  log_trace(glue("db_lookup_users(): {user_ids}"))
+
   # return a tibble where each row corresponds to a User and each column
   # to one of the User properties. when a user in not present in the
   # database, should not return a row in the output tibble for that

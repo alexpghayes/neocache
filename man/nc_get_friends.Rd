@@ -6,20 +6,16 @@
 Returns the friend relationships via a tibble edge list.}
 \usage{
 nc_get_friends(
-  users,
+  user_ids,
   cache_name,
   n = 5000,
-  retryonratelimit = NULL,
+  retryonratelimit = TRUE,
   cursor = "-1",
   verbose = TRUE,
   token = NULL
 )
 }
 \arguments{
-\item{users}{Screen name or user ID of target user from which the
-user IDs of friends (accounts followed BY target user) will be
-retrieved.}
-
 \item{n}{Desired number of results to return. Results are downloaded
 in pages when \code{n} is large; the default value will download a single
 page. Set \code{n = Inf} to download as many results as possible.

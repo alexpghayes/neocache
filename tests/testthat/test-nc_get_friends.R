@@ -16,7 +16,6 @@ if (!nc_cache_exists("get_friends_test")) {
 nc_empty_cache("get_friends_test", check_with_me_first = FALSE)
 
 test_that("stuff", {
-
   first_call <- nc_get_friends(test_ids[1], "get_friends_test")
   second_call <- nc_get_friends(test_ids[1], "get_friends_test")
 
@@ -44,5 +43,4 @@ test_that("stuff", {
   )
 
   expect_equal(third_call, fourth_call)
-
 })

@@ -8,7 +8,7 @@
 #' from the user in the 'from' column to the user in to 'to' column
 #'
 #' @export
-nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = NULL, cursor = "-1", verbose = TRUE, token = NULL) {
+nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = TRUE, cursor = "-1", verbose = TRUE, token = NULL) {
   # here we will need to query twice: once to ask who we actually
   # have *complete* friendship edges for, and then a second time to get
   # those friendship edges

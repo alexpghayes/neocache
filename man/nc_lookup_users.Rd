@@ -8,7 +8,7 @@ nc_lookup_users(
   user_ids,
   cache_name,
   token = NULL,
-  retryonratelimit = NULL,
+  retryonratelimit = TRUE,
   verbose = TRUE
 )
 }

@@ -17,7 +17,6 @@
 #' @export
 #'
 nc_create_cache <- function(cache_name, neo4j_pass = "password", http_port = 7474, bolt_port = 7687, url = NULL) {
-
   if (!find_docker()) {
     stop("Docker does not appear to be running. Please start Docker and then try again.")
   }
@@ -165,7 +164,6 @@ nc_activate_cache <- function(cache_name) {
   log_debug("Establishing connection with Neo4J database ...")
 
   while (!is_active(cache)) {
-
     Sys.sleep(3)
 
     if (!is_docker_container_running(cache$container_name)) {
@@ -179,7 +177,7 @@ nc_activate_cache <- function(cache_name) {
 
 is_active <- function(cache) {
   con <- neo4j_api_connection(cache)
-  try(con$get_version(), silent = TRUE) == "3.5.21"  # this is a hack
+  try(con$get_version(), silent = TRUE) == "3.5.21" # this is a hack
 }
 
 
@@ -191,7 +189,6 @@ is_active <- function(cache) {
 #'
 #' @export
 nc_deactivate_cache <- function(cache_name) {
-
   log_debug("Deactivating {cache_name} cache ...")
 
   if (stop_docker(cache_name)) {
@@ -210,7 +207,6 @@ nc_deactivate_cache <- function(cache_name) {
 #'
 #' @export
 nc_destroy_cache <- function(cache_name) {
-
   if (docker_container_exists(cache_name)) {
     log_debug("Removing associated Docker container ...")
 
@@ -228,7 +224,6 @@ nc_destroy_cache <- function(cache_name) {
   path <- cache_path(cache_name)
 
   if (file.exists(path)) {
-
     log_debug("Removing cache metadata file ...")
 
     if (file.remove(path)) {
@@ -242,7 +237,6 @@ nc_destroy_cache <- function(cache_name) {
 }
 
 cache_path <- function(cache_name) {
-
   cache_folder <- rappdirs::app_dir("neocache")$cache()
 
   if (!dir.exists(cache_folder)) {
@@ -292,7 +286,6 @@ nc_cache_exists <- function(cache_name) {
 #' @export
 #'
 nc_sitrep <- function() {
-
   caches <- get_all_caches()
 
   cli::cli_h1("Caches")
@@ -311,7 +304,6 @@ nc_sitrep <- function() {
 }
 
 get_all_caches <- function() {
-
   cache_metadata_files <- list.files(
     path = rappdirs::app_dir("neocache")$cache(),
     pattern = "*.\\.rds",

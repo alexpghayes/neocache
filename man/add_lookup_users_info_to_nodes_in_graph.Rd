@@ -4,7 +4,13 @@
 \alias{add_lookup_users_info_to_nodes_in_graph}
 \title{Fetches the user's lookup_users data then updates their info in the graph.}
 \usage{
-add_lookup_users_info_to_nodes_in_graph(user_ids, cache)
+add_lookup_users_info_to_nodes_in_graph(
+  user_ids,
+  token,
+  retryonratelimit,
+  verbose,
+  cache
+)
 }
 \arguments{
 \item{user_ids}{a vector of user_ids. do NOT pass screen names}
