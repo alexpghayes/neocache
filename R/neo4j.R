@@ -17,7 +17,25 @@ neo4j_api_connection <- function(cache) {
 #' @keywords internal
 query_neo4j <- function(query, cache) {
   con <- neo4j_api_connection(cache)
-  suppressMessages(call_neo4j(query, con))
+
+  # ignore one very specific message that we know we can safely ignore
+  # `No data returned`, but let all other messages through. see
+  # https://adv-r.hadley.nz/conditions.html#handling-conditions for some
+  # limited background but not much and
+  # https://stackoverflow.com/questions/65035810/is-it-possible-to-handle-simple-messages-in-r-if-yes-how
+  # which is where this code comes from.
+
+  # this is too fancy for you future alex, if shit break do something simple
+  # instead of wasting a day trying to figure this out
+
+  withCallingHandlers(
+    message = function(cnd) {
+      if (conditionMessage(cnd) == "No data returned.")
+        invokeRestart("muffleMessage")
+    },
+    call_neo4j(query, con)
+  )
+
 }
 
 
