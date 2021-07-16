@@ -13,6 +13,8 @@ nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = TR
   # have *complete* friendship edges for, and then a second time to get
   # those friendship edges
 
+  log_trace(glue("nc_get_friends(): {user_ids}"))
+
   cache <- nc_activate_cache(cache_name)
 
   log_debug("Getting friend sampling status ..")
@@ -85,6 +87,9 @@ nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = TR
 #'
 #' @return a 2-column tibble edge list from user_ids to their friends
 add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cursor, verbose, token, cache) {
+
+  log_trace(glue("add_friend_edges_to_nodes_in_graph(): {user_ids}"))
+
   if (length(user_ids) < 1) {
     return(empty_edge_list())
   }
@@ -170,6 +175,8 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
 #' (3) are in the graph and have sampled friends
 friend_sampling_status <- function(user_ids, cache) {
 
+  log_trace(glue("friend_sampling_status(): {user_ids}"))
+
   # might be a tibble with zero rows if no users are present in graph
   present_users <- db_lookup_users(user_ids, cache)
 
@@ -198,6 +205,9 @@ friend_sampling_status <- function(user_ids, cache) {
 #' @return a 2-column tibble edge list with entries from the users in user_ids
 #' to their friends
 db_get_friends <- function(user_ids, cache) {
+
+  log_trace(glue("db_get_friends(): {user_ids}"))
+
   if (length(user_ids) < 1) {
     return(empty_edge_list())
   }
