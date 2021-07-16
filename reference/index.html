@@ -145,6 +145,18 @@
       <tr>
         
         <td>
+          <p><code><a href="add_friend_edges_to_nodes_in_graph.html">add_friend_edges_to_nodes_in_graph()</a></code> </p>
+        </td>
+        <td><p>user_ids is a list of COMPLETELY NEW users. This function performs the following:
+<ol>
+<li><p>Fetch the friends of each user (call these main users) listed in user_ids (call these blank friends)</p></li>
+<li><p>MERGE nodes for main users and blank friends (each of these nodes will only contain a user_id field)</p></li>
+<li><p>Create edges between main users and their respective blank friends</p></li>
+<li><p>Set the sampled_friends_at property for nodes that were sampled</p></li>
+</ol></p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="add_lookup_users_info_to_nodes_in_graph.html">add_lookup_users_info_to_nodes_in_graph()</a></code> </p>
         </td>
         <td><p>Fetches the user's lookup_users data then updates their info in the graph.</p></td>
@@ -182,47 +194,10 @@ tbl argument.</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="fetch_followers.html">fetch_followers()</a></code> </p>
-        </td>
-        <td><p>Fetches the followers of the provided user ID's via <code>rtweet</code>.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="follower_sampling_status.html">follower_sampling_status()</a></code> </p>
-        </td>
-        <td><p>Checks whether follower data has already been sampled for the provided
-vector of users.</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="friend_sampling_status.html">friend_sampling_status()</a></code> </p>
         </td>
         <td><p>Checks whether friend data has already been sampled for the provided
 vector of users.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="merge_then_fetch_connect_followers.html">merge_then_fetch_connect_followers()</a></code> </p>
-        </td>
-        <td><p>user_ids is a list of COMPLETELY NEW users. This function performs the following:
-<ol>
-<li><p>Fetch the followers of each user (call these main users) listed in user_ids (call these blank followers)</p></li>
-<li><p>MERGE nodes for main users and blank followers (each of these nodes will only contain a user_id field)</p></li>
-<li><p>Create edges between main users and their respective blank followers</p></li>
-<li><p>Set the sampled_followers_at property for nodes that were sampled</p></li>
-</ol></p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="merge_then_fetch_connect_friends.html">merge_then_fetch_connect_friends()</a></code> </p>
-        </td>
-        <td><p>user_ids is a list of COMPLETELY NEW users. This function performs the following:
-<ol>
-<li><p>Fetch the friends of each user (call these main users) listed in user_ids (call these blank friends)</p></li>
-<li><p>MERGE nodes for main users and blank friends (each of these nodes will only contain a user_id field)</p></li>
-<li><p>Create edges between main users and their respective blank friends</p></li>
-<li><p>Set the sampled_friends_at property for nodes that were sampled</p></li>
-</ol></p></td>
       </tr><tr>
         
         <td>
@@ -248,13 +223,6 @@ cache</p></td>
           <p><code><a href="nc_empty_cache.html">nc_empty_cache()</a></code> </p>
         </td>
         <td><p>Remove all data from a cache</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="nc_get_followers.html">nc_get_followers()</a></code> </p>
-        </td>
-        <td><p>Fetches the follows of all of the users in a provided vector. Returns
-the follower relationships in the form of an edge list.</p></td>
       </tr><tr>
         
         <td>

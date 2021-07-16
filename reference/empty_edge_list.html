@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Get (cached) information about Twitter users — nc_lookup_users • neocache</title>
+<title>Create an empty table of following information — empty_edge_list • neocache</title>
 
 
 <!-- jquery -->
@@ -39,10 +39,8 @@
 
 
 
-<meta property="og:title" content="Get (cached) information about Twitter users — nc_lookup_users" />
-<meta property="og:description" content="Looks up information pertaining to a vector of provided users. Retrieves
-cached data for users who have already been looked up, and fetches new
-data for users who have not bee looked up yet from the Twitter API." />
+<meta property="og:title" content="Create an empty table of following information — empty_edge_list" />
+<meta property="og:description" content="Create an empty table of following information" />
 
 
 
@@ -122,70 +120,22 @@ data for users who have not bee looked up yet from the Twitter API." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Get (cached) information about Twitter users</h1>
-    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/lookup_users.R'><code>R/lookup_users.R</code></a></small>
-    <div class="hidden name"><code>nc_lookup_users.Rd</code></div>
+    <h1>Create an empty table of following information</h1>
+    <small class="dont-index">Source: <a href='https://github.com/alexpghayes/neocache/blob/master/R/constants.R'><code>R/constants.R</code></a></small>
+    <div class="hidden name"><code>empty_edge_list.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Looks up information pertaining to a vector of provided users. Retrieves
-cached data for users who have already been looked up, and fetches new
-data for users who have not bee looked up yet from the Twitter API.</p>
+    <p>Create an empty table of following information</p>
     </div>
 
-    <pre class="usage"><span class='fu'>nc_lookup_users</span><span class='op'>(</span>
-  <span class='va'>user_ids</span>,
-  <span class='va'>cache_name</span>,
-  token <span class='op'>=</span> <span class='cn'>NULL</span>,
-  retryonratelimit <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  verbose <span class='op'>=</span> <span class='cn'>TRUE</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>empty_edge_list</span><span class='op'>(</span><span class='op'>)</span></pre>
 
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>user_ids</th>
-      <td><p>Character vector of Twitter user ids. <strong>DO NOT</strong>
-pass Twitter screen names, as <code>user_ids</code> are taken to be unique
-node identifiers.</p></td>
-    </tr>
-    <tr>
-      <th>token</th>
-      <td><p>Expert use only. Use this to override authentication for
-a single API call. In most cases you are better off changing the
-default for all calls. See <code>auth_as()</code> for details.</p></td>
-    </tr>
-    <tr>
-      <th>retryonratelimit</th>
-      <td><p>If <code>TRUE</code>, and a rate limit is exhausted, will wait
-until it refreshes. Most twitter rate limits refresh every 15 minutes.
-If <code>FALSE</code>, and the rate limit is exceeded, the function will terminate
-early with a warning; you'll still get back all results received up to
-that point. The default value, <code>NULL</code>, consults the option
-<code>rtweet.retryonratelimit</code> so that you can globally set it to <code>TRUE</code>,
-if desired.</p>
-<p>If you expect a query to take hours or days to perform, you should not
-rely soley on <code>retryonratelimit</code> because it does not handle other common
-failure modes like temporarily losing your internet connection.</p></td>
-    </tr>
-    <tr>
-      <th>verbose</th>
-      <td><p>Show progress bars and other messages indicating current
-progress?</p></td>
-    </tr>
-    <tr>
-      <th>cache</th>
-      <td><p>A <code>cache</code> object. See <code><a href='nc_create_cache.html'>nc_create_cache()</a></code>.</p></td>
-    </tr>
-    </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A tibble where each row corresponds to a User and each column
-to one of the User properties. If a user cannot be sampled, should
-return nothing for that user. If no users can be sampled, should
-return an empty tibble with appropriate columns.</p>
+    <p>an empty 2-column tibble used as a placeholder for
+when user data is not available</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

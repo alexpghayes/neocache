@@ -135,10 +135,10 @@ Returns the friend relationships via a tibble edge list.</p>
     </div>
 
     <pre class="usage"><span class='fu'>nc_get_friends</span><span class='op'>(</span>
-  <span class='va'>users</span>,
+  <span class='va'>user_ids</span>,
   <span class='va'>cache_name</span>,
   n <span class='op'>=</span> <span class='fl'>5000</span>,
-  retryonratelimit <span class='op'>=</span> <span class='cn'>NULL</span>,
+  retryonratelimit <span class='op'>=</span> <span class='cn'>TRUE</span>,
   cursor <span class='op'>=</span> <span class='st'>"-1"</span>,
   verbose <span class='op'>=</span> <span class='cn'>TRUE</span>,
   token <span class='op'>=</span> <span class='cn'>NULL</span>
@@ -147,12 +147,6 @@ Returns the friend relationships via a tibble edge list.</p>
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>users</th>
-      <td><p>Screen name or user ID of target user from which the
-user IDs of friends (accounts followed BY target user) will be
-retrieved.</p></td>
-    </tr>
     <tr>
       <th>n</th>
       <td><p>Desired number of results to return. Results are downloaded
