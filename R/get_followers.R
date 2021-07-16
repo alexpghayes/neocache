@@ -52,7 +52,7 @@ merge_then_fetch_connect_followers <- function(user_ids, n, cache) {
   user_ids <- c(user_ids)
 
   if (length(user_ids) <= 1 && is.na(user_ids)) {
-    return(empty_user_edges())
+    return(empty_edge_list())
   }
 
   ### 1.
@@ -90,7 +90,7 @@ merge_then_fetch_connect_followers <- function(user_ids, n, cache) {
 #' @importFrom dplyr rename bind_cols bind_rows
 #' @importFrom rtweet get_followers
 fetch_followers <- function(user_ids, n) {
-  final <- empty_user_edges()
+  final <- empty_edge_list()
   for (to_id in user_ids) {
     final <- rtweet::get_followers(to_id, n = n) %>%
       rename(from = .data$user_id) %>%

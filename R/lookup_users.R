@@ -56,7 +56,7 @@ nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit
     log_formatter(formatter_glue)
   } else {
     log_trace("Did not need to update any nodes already in Neo4J.")
-    upgraded_user_data <- empty_lookup()
+    upgraded_user_data <- empty_user()
   }
 
   if (length(not_in_graph_ids) != 0) {
@@ -70,7 +70,7 @@ nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit
     log_formatter(formatter_glue)
   } else {
     log_trace("Did not need to add any new nodes to Neo4J.")
-    new_user_data <- empty_lookup()
+    new_user_data <- empty_user()
   }
 
   log_trace(glue("sampled_data is {nrow(sampled_data)} x {ncol(sampled_data)} with type signature"))
@@ -80,7 +80,7 @@ nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit
   log_trace(glue("new_user_data is {nrow(new_user_data)} x {ncol(new_user_data)} with type signature"))
   log_trace(type_signature(new_user_data))
 
-  bind_rows(empty_lookup(), sampled_data, upgraded_user_data, new_user_data)
+  bind_rows(empty_user(), sampled_data, upgraded_user_data, new_user_data)
 }
 
 
@@ -100,7 +100,7 @@ add_lookup_users_info_to_nodes_in_graph <- function(user_ids, token, retryonrate
   log_debug(glue("Need to request user data on {length(user_ids)} users from API"))
 
   if (length(user_ids) == 0) {
-    return(empty_lookup())
+    return(empty_user())
   }
 
   tryCatch(
@@ -135,7 +135,7 @@ add_lookup_users_info_to_nodes_in_graph <- function(user_ids, token, retryonrate
 
       if (grepl("404", msg)) {
         log_warn("Treating 404 error as invalid user id, adding to Neo4J with missing data, and returning empty lookup.")
-        user_info_raw <<- empty_lookup()
+        user_info_raw <<- empty_user()
       } else {
         stop(cnd)
       }
@@ -191,7 +191,7 @@ db_lookup_users <- function(user_ids, cache) {
   # If the users' data does not exist in the DB, return an empty lookup,
   # otherwise return the users' data
   if (length(user_data) == 0) {
-    return(empty_lookup())
+    return(empty_user())
   }
 
   # there's a cheeky hacky here: when nodes are added to Neo4J in the simplest
@@ -202,5 +202,5 @@ db_lookup_users <- function(user_ids, cache) {
   # about node properties and can't use a separate Neo4J query, which seems
   # perfectly reasonable
 
-  bind_rows(empty_lookup(), user_data[[1]])
+  bind_rows(empty_user(), user_data[[1]])
 }

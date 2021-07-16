@@ -13,7 +13,7 @@ properties <- c(
 #'
 #' @keywords internal
 #'
-empty_lookup <- function() {
+empty_user <- function() {
   tibble(
     user_id = character(0),
     screen_name = character(0),
@@ -48,7 +48,7 @@ empty_lookup <- function() {
 #' when user data is not available
 #'
 #' @keywords internal
-empty_user_edges <- function() {
+empty_edge_list <- function() {
   tibble(
     from = character(0),
     to = character(0)

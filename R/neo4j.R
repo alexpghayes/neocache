@@ -101,7 +101,7 @@ db_get_followers <- function(user_ids, cache) {
   )
 
   if (length(results) != 2) {
-    return(empty_user_edges())
+    return(empty_edge_list())
   }
 
   tibble(from = results$from.user_id, to = results$to.user_id)

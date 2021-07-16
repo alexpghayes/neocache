@@ -69,7 +69,7 @@ nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = NU
   log_trace(glue("existing_edges is {nrow(existing_edges)} x {ncol(existing_edges)} with type signature"))
   log_trace(type_signature(existing_edges))
 
-  bind_rows(empty_user_edges(), new_edges, upgraded_edges, existing_edges)
+  bind_rows(empty_edge_list(), new_edges, upgraded_edges, existing_edges)
 }
 
 
@@ -86,17 +86,16 @@ nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = NU
 #' @return a 2-column tibble edge list from user_ids to their friends
 add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cursor, verbose, token, cache) {
   if (length(user_ids) < 1) {
-    return(empty_user_edges())
+    return(empty_edge_list())
   }
 
   sample_time <- Sys.time()
 
   # make sure data returned by API is in the right scope
-  edge_list <- NULL
 
   tryCatch(
     expr = {
-      log_debug("Making API request with rtweet::get_friends")
+      log_trace(glue("Making API request with rtweet::get_friends for: {user_ids}"))
 
       edge_list <<- rtweet::get_friends(
         users = user_ids,
@@ -106,8 +105,19 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
         parse = TRUE,
         verbose = verbose,
         token = token
-      ) %>%
-        rename(from = .data$user, to = .data$ids)
+      )
+
+      if (NCOL(edge_list) == 2) {
+        edge_list <<- rename(edge_list, from = .data$user, to = .data$ids)
+      } else {
+        log_warn(
+          glue(
+            "Edge list returned from Twitter API had {NCOL(iris)} columns, treating as empty edgelist."
+          )
+        )
+
+        edge_list <<- empty_edge_list()
+      }
     },
     error = function(cnd) {
 
@@ -124,8 +134,11 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
       # with user locale / language settings. blargh
 
       if (grepl("401", msg)) {
-        log_warn("Treating 401 error as invalid user id, adding to Neo4J with missing data, and returning empty lookup.")
-        edge_list <<- empty_user_edges()
+        log_warn("Treating 401 error as invalid user id, adding to Neo4J with missing data, and returning empty friend list.")
+        edge_list <<- empty_edge_list()
+      } else if (grepl("404", msg)) {
+        log_warn("Treating 404 error as invalid user id, adding to Neo4J with missing data, and returning empty friend list.")
+        edge_list <<- empty_edge_list()
       } else {
         stop(cnd)
       }
@@ -186,7 +199,7 @@ friend_sampling_status <- function(user_ids, cache) {
 #' to their friends
 db_get_friends <- function(user_ids, cache) {
   if (length(user_ids) < 1) {
-    return(empty_user_edges())
+    return(empty_edge_list())
   }
 
   friend_query <- paste0(
@@ -211,7 +224,7 @@ db_get_friends <- function(user_ids, cache) {
   )
 
   if (ncol(results) != 2) {
-    return(empty_user_edges())
+    return(empty_edge_list())
   }
 
   tibble(from = results$from.user_id, to = results$to.user_id)
