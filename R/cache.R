@@ -51,7 +51,7 @@ nc_create_cache <- function(cache_name, neo4j_pass = "password", http_port = 747
 
   log_debug("{cache_name} Docker container successfully created.")
 
-  cache <- list(
+  cache_metadata <- list(
     container_name = cache_name,
     neo4j_pass = neo4j_pass,
     url = glue("http://localhost:{http_port}"),
@@ -59,12 +59,18 @@ nc_create_cache <- function(cache_name, neo4j_pass = "password", http_port = 747
     bolt_port = bolt_port
   )
 
-  class(cache) <- "neocache_metadata"
+  class(cache_metadata) <- "neocache_metadata"
 
   cache_save_path <- cache_path(cache_name)
 
   log_debug(glue("Writing cache rds to {cache_save_path}"))
-  write_rds(cache, cache_save_path)
+  write_rds(cache_metadata, cache_save_path)
+
+  log_debug("Creating unique user_id constraint in Neo4J database")
+
+  cache <- nc_activate_cache(cache_name)
+
+  query_neo4j("CREATE CONSTRAINT ON (n:User) ASSERT n.user_id IS UNIQUE", cache)
 
   invisible(NULL)
 }
