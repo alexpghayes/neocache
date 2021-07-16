@@ -221,6 +221,8 @@ db_get_friends <- function(user_ids, cache) {
 
   query_neo4j(friend_query, cache)
 
+  log_trace("db_get_friends(): Neo4J query executed")
+
   tmp <- tempfile()
 
   copy_csv_from_docker("get_friends.csv", tmp, cache$container_name)
@@ -232,6 +234,8 @@ db_get_friends <- function(user_ids, cache) {
       to.user_id = readr::col_character()
     )
   )
+
+  log_trace("db_get_friends(): Data extracted from docker csv")
 
   if (ncol(results) != 2) {
     return(empty_edge_list())

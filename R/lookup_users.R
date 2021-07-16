@@ -30,12 +30,7 @@ nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit
   log_trace(glue("nc_lookup_user(): {user_ids}"))
 
   cache <- nc_activate_cache(cache_name)
-
-  log_debug("Looking for users in Neo4J database ...")
-
   user_data <- db_lookup_users(user_ids, cache)
-
-  log_debug("Looking for users in Neo4J database ... done")
 
   log_formatter(formatter_pander)
   log_trace("user_data (from Neo4J) key columns:")
@@ -190,6 +185,8 @@ db_lookup_users <- function(user_ids, cache) {
   query <- glue('MATCH (n) WHERE n.user_id in ["{user_string}"] RETURN n')
 
   user_data <- query_neo4j(query, cache)
+
+  log_trace(glue("db_lookup_users(): Received results from Neo4J."))
 
   # If the users' data does not exist in the DB, return an empty lookup,
   # otherwise return the users' data
