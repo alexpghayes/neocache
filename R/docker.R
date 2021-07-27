@@ -55,3 +55,9 @@ copy_csv_from_docker <- function(file_name, local_path, container_name) {
   code <- system(glue("docker cp {container_name}:/var/lib/neo4j/import/{file_name} {local_path}"))
   success(code)
 }
+
+remove_file_in_docker_container <- function(file_name, container_name) {
+  code <- system(glue("docker exec {container_name} rm -rf /var/lib/neo4j/import/{file_name}"))
+  success(code)
+}
+

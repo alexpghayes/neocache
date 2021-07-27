@@ -11,11 +11,12 @@ neo4j_api_connection <- function(cache) {
 #'
 #' @param query the CYPHER query to be passed to call_neo4j
 #' @param cache the cache to interface with
+#' @inheritDotParams neo4r::call_neo4j
 #'
 #' @return the return value from call_neo4j
 #'
 #' @keywords internal
-query_neo4j <- function(query, cache) {
+query_neo4j <- function(query, cache, ...) {
   con <- neo4j_api_connection(cache)
 
   # ignore one very specific message that we know we can safely ignore
@@ -35,7 +36,7 @@ query_neo4j <- function(query, cache) {
         invokeRestart("muffleMessage")
       }
     },
-    call_neo4j(query, con)
+    call_neo4j(query, con, ...)
   )
 
 }
@@ -125,3 +126,141 @@ db_get_followers <- function(user_ids, cache) {
 
   tibble(from = results$from.user_id, to = results$to.user_id)
 }
+
+#' Title
+#'
+#' @param cache_name
+#' @param local_path
+#'
+#' @export
+nc_export_all_follows <- function(cache_name, local_path) {
+  cache <- nc_activate_cache(cache_name)
+  log_trace(glue("Exporting all Follows edges from {cache_name} cache to CSV in Docker ..."))
+
+  query <- glue(
+    'CALL apoc.export.csv.query(',
+    '"MATCH (a)-[r:FOLLOWS]->(b) ',
+    'RETURN ',
+    'a.user_id AS from, ',
+    'b.user_id AS to", ',
+    '"relationships.csv", null)'
+  )
+
+  # TODO: parse call_status to check from done: true, for now assume
+  # someone will yell at us in a GH issue if they can't export their data
+  call_status <- query_neo4j(query, cache, output = "json")
+
+  log_trace(glue("Exporting all Follows edges from {cache_name} cache to CSV in Docker ... ... done"))
+  log_trace(glue("Copying relationships.csv out of {cache_name} Docker container ..."))
+
+  copy_csv_from_docker("relationships.csv", local_path, cache_name)
+
+  log_trace(glue("Copying relationships.csv out of {cache_name} Docker container ... done"))
+  log_trace(glue("Removing relationships.csv from {cache_name} Docker container ..."))
+
+  remove_file_in_docker_container("relationships.csv", cache_name)
+
+  log_trace(glue("Removing relationships.csv from {cache_name} Docker container ... done"))
+  log_info(glue("All Follows relationships in {cache_name} cache exported to {local_path}"))
+}
+
+#' Title
+#'
+#' @param cache_name
+#' @param local_path
+#'
+#' @export
+nc_export_all_users <- function(cache_name, local_path) {
+  cache <- nc_activate_cache(cache_name)
+  log_trace(glue("Exporting all Users from {cache_name} cache to `users.csv` in Docker ..."))
+
+  query <- glue(
+    'CALL apoc.export.csv.query("MATCH (u:User) RETURN ',
+    'u.user_id AS user_id, ',
+    'u.screen_name AS screen_name, ',
+    'u.protected AS protected, ',
+    'u.followers_count AS followers_count, ',
+    'u.friends_count AS friends_count, ',
+    'u.listed_count AS listed_count, ',
+    'u.statuses_count AS statuses_count, ',
+    'u.favourites_count AS favourites_count, ',
+    'u.account_created_at AS account_created_at, ',
+    'u.verified AS verified, ',
+    'u.profile_url AS profile_url, ',
+    'u.profile_expanded_url AS profile_expanded_url, ',
+    'u.account_lang AS account_lang, ',
+    'u.profile_banner_url AS profile_banner_url, ',
+    'u.profile_background_url AS profile_background_url, ',
+    'u.profile_image_url AS profile_image_url, ',
+    'u.name AS name, ',
+    'u.location AS location, ',
+    'u.description AS description, ',
+    'u.url AS url, ',
+    'u.sampled_at AS sampled_at, ',
+    'u.sampled_friends_at AS sampled_friends_at, ',
+    'u.sampled_followers_at AS sampled_followers_at", ',
+    '"./users.csv", null)'
+  )
+
+  # TODO: parse call_status to check from done: true, for now assume
+  # someone will yell at us in a GH issue if they can't export their data
+  call_status <- query_neo4j(query, cache, output = "json")
+
+  log_trace(glue("Exporting all Users from {cache_name} cache to `users.csv` in Docker ... done"))
+  log_trace(glue("Copying `users.csv` out of {cache_name} Docker container ..."))
+
+  copy_csv_from_docker("users.csv", local_path, cache_name)
+
+  log_trace(glue("Copying `users.csv` out of {cache_name} Docker container ... done"))
+  log_trace(glue("Removing `users.csv` from {cache_name} Docker container ..."))
+
+  remove_file_in_docker_container("users.csv", cache_name)
+
+  log_trace(glue("Removing `users.csv` from {cache_name} Docker container ... done"))
+  log_info(glue("All User nodes in {cache_name} cache exported to {local_path}"))
+}
+
+#' Title
+#'
+#' @param cache_name
+#' @param local_path
+#'
+#' @export
+nc_export_subgraph_follows <- function(cache_name, local_path) {
+  cache <- nc_activate_cache(cache_name)
+  log_trace(glue("Exporting all FOLLOWS edges to CSV in Docker ..."))
+
+  query <- 'CALL apoc.export.csv.query("MATCH (a)-[r:FOLLOWS]->(b) RETURN a, b", "./relationships.csv", null)'
+  query_neo4j(query, cache)
+
+  log_trace(glue("Exporting all FOLLOWS edges to CSV in Docker ... done"))
+  log_trace(glue("Copying FOLLOWS CSV out of Docker ..."))
+
+  copy_csv_from_docker("relationships.csv", local_path, cache_name)
+  log_trace(glue("Copying FOLLOWS CSV out of Docker ... done"))
+
+  log_info(glue("FOLLOWS relationships available as CSV at {local_path}"))
+}
+
+#' Title
+#'
+#' @param cache_name
+#' @param local_path
+#'
+#' @export
+nc_export_subgraph_users <- function(cache_name, local_path) {
+  cache <- nc_activate_cache(cache_name)
+  log_trace(glue("Exporting all FOLLOWS edges to CSV in Docker ..."))
+
+  query <- 'CALL apoc.export.csv.query("MATCH (a)-[r:FOLLOWS]->(b) RETURN a, b", "./relationships.csv", null)'
+  query_neo4j(query, cache)
+
+  log_trace(glue("Exporting all FOLLOWS edges to CSV in Docker ... done"))
+  log_trace(glue("Copying FOLLOWS CSV out of Docker ..."))
+
+  copy_csv_from_docker("relationships.csv", local_path, cache_name)
+  log_trace(glue("Copying FOLLOWS CSV out of Docker ... done"))
+
+  log_info(glue("FOLLOWS relationships available as CSV at {local_path}"))
+}
+

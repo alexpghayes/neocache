@@ -27,15 +27,11 @@ nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit
     stop("`user_ids` must be a character vector.")
   }
 
-  log_trace(glue("nc_lookup_user(): {user_ids}"))
-
   cache <- nc_activate_cache(cache_name)
   user_data <- db_lookup_users(user_ids, cache)
 
-  log_formatter(formatter_pander)
-  log_trace("user_data (from Neo4J) key columns:")
+  log_trace("User data found in Neo4J database:")
   log_trace(select(user_data, user_id, screen_name, sampled_at), style = "simple")
-  log_formatter(formatter_glue)
 
   sampled_data <- filter(user_data, !is.na(.data$sampled_at))
 
@@ -43,27 +39,44 @@ nc_lookup_users <- function(user_ids, cache_name, token = NULL, retryonratelimit
   not_sampled_ids <- filter(user_data, is.na(.data$sampled_at))$user_id
 
   if (length(not_sampled_ids) != 0) {
-    log_trace(glue("Need to get user data from API for: {not_sampled_ids}"))
+
+    log_debug(glue("Need data from Twitter API for {length(not_sampled_id)} users already in graph..."))
+
+    log_trace(
+      glue(
+        "Need data from Twitter API for {length(not_sampled_id)} users ... ",
+        "user(s): {user_ids}",
+        .trim = FALSE
+      )
+    )
+
     upgraded_user_data <- add_lookup_users_info_to_nodes_in_graph(not_sampled_ids, token, retryonratelimit, verbose, cache)
 
-    log_formatter(formatter_pander)
-    log_trace("upgraded_user_data key columns:")
+    log_trace(glue("User data found from Twitter for {length(not_sampled_id)} users already in graph:"))
     log_trace(select(upgraded_user_data, user_id, screen_name, sampled_at), style = "simple")
-    log_formatter(formatter_glue)
   } else {
-    log_trace("Did not need to update any nodes already in Neo4J.")
+
+    log_debug(glue("Did not need data from Twitter API for any users already in graph."))
     upgraded_user_data <- empty_user()
   }
 
   if (length(not_in_graph_ids) != 0) {
-    log_trace(glue("Need to add entirely new node(s): {not_in_graph_ids}", sep = "\n"))
+
+    log_debug(glue("Need data from Twitter API for {length(not_in_graph_ids)} users not in graph..."))
+
+    log_trace(
+      glue(
+        "Need data from Twitter API for {length(not_in_graph_ids)} users ... ",
+        "user(s): {user_ids}",
+        .trim = FALSE
+      )
+    )
+
     db_add_new_users(not_in_graph_ids, cache)
     new_user_data <- add_lookup_users_info_to_nodes_in_graph(not_in_graph_ids, token, retryonratelimit, verbose, cache)
 
-    log_formatter(formatter_pander)
-    log_trace("new_user_data key columns:")
+    log_trace(glue("User data found from Twitter for {length(not_in_graph_ids} users not in graph:"))
     log_trace(select(new_user_data, user_id, screen_name, sampled_at), style = "simple")
-    log_formatter(formatter_glue)
   } else {
     log_trace("Did not need to add any new nodes to Neo4J.")
     new_user_data <- empty_user()
@@ -102,7 +115,7 @@ add_lookup_users_info_to_nodes_in_graph <- function(user_ids, token, retryonrate
 
   tryCatch(
     expr = {
-      log_debug("Making API request with rtweet::lookup_users")
+      log_info(glue("Making API request with rtweet::lookup_users  for {length(user_ids)} users"))
 
       user_info_raw <<- rtweet::lookup_users(
         users = user_ids,
@@ -111,9 +124,16 @@ add_lookup_users_info_to_nodes_in_graph <- function(user_ids, token, retryonrate
         verbose = verbose
       )
 
+      log_trace(glue("Making API request with rtweet::lookup_users for: {user_ids} ... results received."))
+      log_trace(glue("Parsing results from API ... "))
+
       if (is.null(user_info_raw)) {
-        log_fatal("user_info_raw is `NULL` after API call.")
+        stop("Results from API are `NULL`. This may be due to authentication failure.")
       }
+
+      log_trace(glue("Parsing results from API ... done."))
+      log_trace(glue("Parsed user data of {length(user_ids)} users returned from API:"))
+      log_trace(user_info_raw, style = "simple")
     },
     error = function(cnd) {
 
@@ -122,21 +142,34 @@ add_lookup_users_info_to_nodes_in_graph <- function(user_ids, token, retryonrate
 
       msg <- conditionMessage(cnd)
 
-      log_warn(glue("Failure making API request. Condition message: {msg}"))
-      log_debug("Call of failed API request: ")
-      log_debug(conditionCall(cnd))
+      log_warn(
+        glue(
+          "Making API request with rtweet::lookup_users for {length(user_ids)} users ... ",
+          "API request failed. Condition message: {msg}",
+          .trim = FALSE
+        )
+      )
 
       # don't want to match on actual text of error message, which may change
       # with user locale / language settings. blargh
 
       if (grepl("404", msg)) {
-        log_warn("Treating 404 error as invalid user id, adding to Neo4J with missing data, and returning empty lookup.")
-        user_info_raw <<- empty_user()
+        log_warn(
+          glue(
+            "Making API request with rtweet::lookup_users for {length(user_ids)} users ... ",
+            "404 error likely due to invalid user id, adding user to Neo4J DB ",
+            "and treating as if user is missing all data.",
+            .trim = FALSE
+          )
+        )
+        edge_list <<- empty_edge_list()
       } else {
         stop(cnd)
       }
     }
   )
+
+
 
   log_debug(glue("Received information on {nrow(user_info_raw)} users."))
   log_trace("user_info_raw is: ")
@@ -174,7 +207,9 @@ add_lookup_users_info_to_nodes_in_graph <- function(user_ids, token, retryonrate
 #'
 #' @return a tibble with any existing data for user_ids
 db_lookup_users <- function(user_ids, cache) {
-  log_trace(glue("db_lookup_users(): {user_ids}"))
+
+  log_debug(glue("Looking up information on {length(user_ids)} users in Neo4J DB ..."))
+  log_trace(glue("Looking up information on {length(user_ids)} users in Neo4J DB ... user(s): {user_ids}"))
 
   # return a tibble where each row corresponds to a User and each column
   # to one of the User properties. when a user in not present in the
@@ -186,7 +221,13 @@ db_lookup_users <- function(user_ids, cache) {
 
   user_data <- query_neo4j(query, cache)
 
-  log_trace(glue("db_lookup_users(): Received results from Neo4J."))
+  log_debug(
+    glue(
+      "Looking up information on {length(user_ids)} users in Neo4J DB ... ",
+      "{NROW(user_ids)} found in Neo4J database.",
+      .trim = FALSE
+    )
+  )
 
   # If the users' data does not exist in the DB, return an empty lookup,
   # otherwise return the users' data

@@ -5,12 +5,22 @@
 \title{Sends CYPHER queries to a given connexion object while suppressing output
 messages that call_neo4j throws.}
 \usage{
-query_neo4j(query, cache)
+query_neo4j(query, cache, ...)
 }
 \arguments{
 \item{query}{the CYPHER query to be passed to call_neo4j}
 
 \item{cache}{the cache to interface with}
+
+\item{...}{
+  Arguments passed on to \code{\link[neo4r:call_neo4j]{neo4r::call_neo4j}}
+  \describe{
+    \item{\code{con}}{A NEO4JAPI connection object}
+    \item{\code{type}}{Return the result as row or as graph}
+    \item{\code{output}}{Use "json" if you want the output to be printed as JSON}
+    \item{\code{include_stats}}{tShould the stats about the transaction be included?}
+    \item{\code{include_meta}}{tShould the stats about the transaction be included?}
+  }}
 }
 \value{
 the return value from call_neo4j

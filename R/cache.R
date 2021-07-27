@@ -42,13 +42,14 @@ nc_create_cache <- function(cache_name, neo4j_pass = "password", http_port = 747
     stop(glue("bolt port must be unique amongst caches and port {bolt_port} is already assigned to another cache."))
   }
 
-  log_debug("Creating {cache_name} Docker container...")
+  log_trace("Creating {cache_name} Docker container...")
 
   if (!create_docker_container(cache_name, neo4j_pass, http_port, bolt_port)) {
     stop(glue("Failed to create the {cache_name} Docker container."))
   }
 
-  log_debug("{cache_name} Docker container successfully created.")
+
+  log_trace("Creating {cache_name} Docker container ... done")
 
   cache_metadata <- list(
     container_name = cache_name,
@@ -62,14 +63,16 @@ nc_create_cache <- function(cache_name, neo4j_pass = "password", http_port = 747
 
   cache_save_path <- cache_path(cache_name)
 
-  log_debug(glue("Writing cache rds to {cache_save_path}"))
+  log_trace(glue("Writing cache metadata to {cache_save_path}"))
   write_rds(cache_metadata, cache_save_path)
 
-  log_debug("Creating unique user_id constraint in Neo4J database")
+  log_trace("Creating unique user_id constraint in Neo4J database ... ")
 
   cache <- nc_activate_cache(cache_name)
 
   query_neo4j("CREATE CONSTRAINT ON (n:User) ASSERT n.user_id IS UNIQUE", cache)
+
+  log_trace("Creating unique user_id constraint in Neo4J database ... done")
 
   invisible(NULL)
 }
@@ -121,19 +124,20 @@ nc_activate_cache <- function(cache_name) {
 
   # DO NOT PASS A CACHE, pass a cache name
 
-  log_debug("Retrieving cache metadata file ... ")
+  log_trace(glue("Retrieving {cache_name} cache metadata file ... "))
 
   cache <- get_cache(cache_name)
 
-  log_debug("Retrieving cache metadata file ... done.")
-  log_debug("Checking if cache is already active ...")
+  log_trace(glue("Retrieving {cache_name} cache metadata file ... done."))
+
+  log_trace(glue("Activating {cache_name} cache ..."))
 
   if (is_active(cache)) {
-    log_debug("Cache is already active, returning cache.")
+    log_trace(glue("Activating {cache_name} cache ... already active"))
     return(invisible(cache))
   }
 
-  log_debug("Cache in not active, attempting to activate.")
+  log_trace("Cache in not active, attempting to activate.")
 
   if (is_up("127.0.0.1", port = cache$http_port)) {
     stop("The selected HTTP port is already in use.")
@@ -143,14 +147,14 @@ nc_activate_cache <- function(cache_name) {
   #   stop("The selected Bolt port is already in use.")
   # }
 
-  log_debug("Looking for docker ...")
+  log_trace("Looking for docker ...")
 
   if (!find_docker()) {
     stop("Could not find docker. See `find_docker()` for details.")
   }
 
-  log_debug("Looking for docker ... found.")
-  log_debug(glue("Starting {cache$container_name} docker container ..."))
+  log_trace("Looking for docker ... found.")
+  log_trace(glue("Starting {cache$container_name} docker container ..."))
 
   if (!start_docker(cache$container_name)) {
     stop(
@@ -160,18 +164,20 @@ nc_activate_cache <- function(cache_name) {
     )
   }
 
-  log_debug(glue("Starting {cache$container_name} docker container ... done."))
-  log_debug("Establishing connection with Neo4J database ...")
+  log_trace(glue("Starting {cache$container_name} docker container ... done."))
+  log_trace(glue("Establishing connection with {cache_name} Neo4J database ..."))
 
   while (!is_active(cache)) {
     Sys.sleep(3)
+
+    log_trace(glue("Establishing connection with {cache_name} Neo4J database ... waiting"))
 
     if (!is_docker_container_running(cache$container_name)) {
       stop(glue("Docker container {cache$container_name} is not longer running, cannot activate cache."))
     }
   }
 
-  log_debug("Establishing connection with Neo4J database ... done.")
+  log_trace(glue("Establishing connection with {cache_name} Neo4J database ... done."))
   invisible(cache)
 }
 
@@ -189,12 +195,12 @@ is_active <- function(cache) {
 #'
 #' @export
 nc_deactivate_cache <- function(cache_name) {
-  log_debug("Deactivating {cache_name} cache ...")
+  log_trace(glue("Deactivating {cache_name} cache ..."))
 
   if (stop_docker(cache_name)) {
-    log_debug("Deactivating {cache_name} cache ... done.")
+    log_trace(glue("Deactivating {cache_name} cache ... done."))
   } else {
-    log_warn("Deactivating {cache_name} cache ... FAILED.")
+    log_warn(glue("Deactivating {cache_name} cache ... failed."))
   }
 }
 
@@ -208,28 +214,28 @@ nc_deactivate_cache <- function(cache_name) {
 #' @export
 nc_destroy_cache <- function(cache_name) {
   if (docker_container_exists(cache_name)) {
-    log_debug("Removing associated Docker container ...")
+    log_trace(glue("Removing {cache_name} Docker container ..."))
 
     nc_deactivate_cache(cache_name)
 
     if (remove_docker_container(cache_name)) {
-      log_debug("Removing associated Docker container ... done")
+      log_trace(glue("Removing {cache_name} cache Docker container ... done"))
     } else {
-      log_warn("Removing associated Docker container ... FAILED")
+      log_warn(glue("Removing {cache_name} cache Docker container ... FAILED"))
     }
   } else {
-    log_debug("No associated docker exists.")
+    log_trace(glue("Removing {cache_name} cache Docker container ... none exists."))
   }
 
   path <- cache_path(cache_name)
 
   if (file.exists(path)) {
-    log_debug("Removing cache metadata file ...")
+    log_trace(glue("Removing {cache_name} cache metadata file ..."))
 
     if (file.remove(path)) {
-      log_debug("Removing cache metadata file ... done")
+      log_trace(glue("Removing {cache_name} cache metadata file ... done"))
     } else {
-      log_warn("Removing cache metadata file ... FAILED")
+      log_warn(glue("Removing {cache_name} cache metadata file ... FAILED"))
     }
   }
 

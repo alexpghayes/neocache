@@ -17,23 +17,27 @@ nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = TR
 
   cache <- nc_activate_cache(cache_name)
 
-  log_debug("Getting friend sampling status ..")
+  log_trace(glue("Getting friend sampling status for {length(user_ids)} users ..."))
 
   status <- friend_sampling_status(user_ids, cache)
 
-  log_debug(
+  num_not_in_graph <- length(status$not_in_graph)
+
+  log_trace(
     glue(
-      "Sampling status summary: {length(status$sampled_friends_at_not_null)} sampled / ",
-      "{length(status$sampled_friends_at_is_null)} unsampled / ",
-      "{length(status$not_in_graph)} new",
+      "Getting friend sampling status for {length(user_ids)} users ... ",
+      "{length(status$sampled_friends_at_not_null)} in graph with friends already sampled / ",
+      "{length(status$sampled_friends_at_is_null)} in graph with friends not already sampled / ",
+      "{num_not_in_graph} not in graph",
       .trim = FALSE
     )
   )
 
-  if (length(status$not_in_graph) > 0) {
-    log_trace("Adding new users to graph ...")
+  length(status$not_in_graph)
+  if (num_not_in_graph > 0) {
+    log_trace(glue("Adding {num_not_in_graph} new users to graph ..."))
     db_add_new_users(status$not_in_graph, cache)
-    log_trace("Adding new users to graph ... done.")
+    log_trace(glue("Adding {num_not_in_graph} new users to graph ... done."))
   }
 
   # status might be character(0) for any set of these things
@@ -56,9 +60,9 @@ nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = TR
     cache = cache
   )
 
-  log_trace("Getting cached edges ...")
+  log_trace(glue("Getting cached friends of {{length(status$sampled_friends_at_not_null)}} users ..."))
   existing_edges <- db_get_friends(status$sampled_friends_at_not_null, cache)
-  log_trace("Getting cached edges ... done.")
+  log_trace(glue("Getting cached friends of {{length(status$sampled_friends_at_not_null)}} users ... done"))
 
   # need to be careful about duplicate edges here. ideally
   # we guarantee that edges are unique somehow before this, but if not
@@ -100,7 +104,8 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
 
   tryCatch(
     expr = {
-      log_trace(glue("Making API request with rtweet::get_friends for: {user_ids}"))
+
+      log_info(glue("Making API request with rtweet::get_friends for {length(user_ids)} users"))
 
       edge_list <<- rtweet::get_friends(
         users = user_ids,
@@ -112,17 +117,28 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
         token = token
       )
 
-      if (NCOL(edge_list) == 2) {
+      log_trace(glue("Making API request with rtweet::get_friends for: {user_ids} ... results received."))
+      log_trace(glue("Parsing results from API ... "))
+
+      if (is.null(edge_list)) {
+        stop("Results from API are `NULL`. This may be due to authentication failure.")
+      } else if (NCOL(edge_list) == 2) {
+
         edge_list <<- rename(edge_list, from = .data$user, to = .data$ids)
+        log_trace(glue("Parsing results from API ... columns renamed."))
       } else {
         log_warn(
           glue(
-            "Edge list returned from Twitter API had {NCOL(iris)} columns, treating as empty edgelist."
+            "Parsing results from API ... results had {NCOL(iris)} columns, treating as empty edgelist."
           )
         )
 
         edge_list <<- empty_edge_list()
       }
+
+      log_trace(glue("Parsing results from API ... done."))
+      log_trace(glue("Parsed friend list of {length(user_ids)} users returned from API:"))
+      log_trace(edge_list, style = "simple")
     },
     error = function(cnd) {
 
@@ -131,18 +147,36 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
 
       msg <- conditionMessage(cnd)
 
-      log_warn(glue("Failure making API request. Condition message: {msg}"))
-      log_debug("Call of failed API request: ")
-      log_debug(conditionCall(cnd))
+      log_warn(
+        glue(
+          "Making API request with rtweet::get_friends for {length(user_ids)} users ... ",
+          "API request failed. Condition message: {msg}",
+          .trim = FALSE
+        )
+      )
 
       # don't want to match on actual text of error message, which may change
       # with user locale / language settings. blargh
 
       if (grepl("401", msg)) {
-        log_warn("Treating 401 error as invalid user id, adding to Neo4J with missing data, and returning empty friend list.")
+        log_warn(
+          glue(
+            "Making API request with rtweet::get_friends for {length(user_ids)} users ... ",
+            "401 error likely due to invalid user id, adding user to Neo4J DB ",
+            "and  treating as if user has empty friend list.",
+            .trim = FALSE
+          )
+        )
         edge_list <<- empty_edge_list()
       } else if (grepl("404", msg)) {
-        log_warn("Treating 404 error as invalid user id, adding to Neo4J with missing data, and returning empty friend list.")
+        log_warn(
+          glue(
+            "Making API request with rtweet::get_friends for {length(user_ids)} users ... ",
+            "404 error likely due to invalid user id, adding user to Neo4J DB ",
+            "and treating as if user has empty friend list.",
+            .trim = FALSE
+          )
+        )
         edge_list <<- empty_edge_list()
       } else {
         stop(cnd)
@@ -150,9 +184,19 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
     }
   )
 
-  db_add_new_users(c(user_ids, edge_list$to), cache)
+  need_to_be_present_in_graph <- c(user_ids, edge_list$to)
+
+  log_trace(glue("Adding up to {length(need_to_be_present_in_graph)} new users to Neo4J DB ..."))
+
+  db_add_new_users(need_to_be_present_in_graph, cache)
+
+  log_trace(glue("Adding up to {length(need_to_be_present_in_graph)} new users to Neo4J DB ... done"))
+  log_trace(glue("Adding {NROW(edge_list)} edges from API result into Neo4J graph ..."))
 
   docker_bulk_connect_nodes(edge_list, cache)
+
+  log_trace(glue("Adding {NROW(edge_list)} edges from API result into Neo4J graph ... done"))
+  log_trace(glue("Setting sampled_friends_at for {length(user_ids)} users ..."))
 
   set_sampled_at_query <- glue(
     'WITH ["', glue_collapse(user_ids, sep = '","'), '"] AS user_ids UNWIND user_ids AS id ',
@@ -160,6 +204,8 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
   )
 
   query_neo4j(set_sampled_at_query, cache)
+
+  log_trace(glue("Setting sampled_friends_at for {length(user_ids)} users ... done"))
 
   edge_list
 }
@@ -174,6 +220,10 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
 #' graph, (2) are in the graph but their friends have not been sampled,
 #' (3) are in the graph and have sampled friends
 friend_sampling_status <- function(user_ids, cache) {
+
+  # it might be possible to speed this up with a more focused query
+  # than that used in db_lookup_users() -- in particular, potentially
+  # could do less reading and writing to disk?
 
   log_trace(glue("friend_sampling_status(): {user_ids}"))
 
