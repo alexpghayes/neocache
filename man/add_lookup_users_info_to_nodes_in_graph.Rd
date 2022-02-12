@@ -5,7 +5,7 @@
 \title{Fetches the user's lookup_users data then updates their info in the graph.}
 \usage{
 add_lookup_users_info_to_nodes_in_graph(
-  user_ids,
+  users,
   token,
   retryonratelimit,
   verbose,
@@ -13,7 +13,7 @@ add_lookup_users_info_to_nodes_in_graph(
 )
 }
 \arguments{
-\item{user_ids}{a vector of user_ids. do NOT pass screen names}
+\item{users}{a vector of users. do NOT pass screen names}
 
 \item{cache}{the cache to interface with}
 }

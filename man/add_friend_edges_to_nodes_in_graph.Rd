@@ -2,16 +2,16 @@
 % Please edit documentation in R/get_friends.R
 \name{add_friend_edges_to_nodes_in_graph}
 \alias{add_friend_edges_to_nodes_in_graph}
-\title{user_ids is a list of COMPLETELY NEW users. This function performs the following:
+\title{users is a list of COMPLETELY NEW users. This function performs the following:
 \enumerate{
-\item Fetch the friends of each user (call these main users) listed in user_ids (call these blank friends)
-\item MERGE nodes for main users and blank friends (each of these nodes will only contain a user_id field)
+\item Fetch the friends of each user (call these main users) listed in users (call these blank friends)
+\item MERGE nodes for main users and blank friends (each of these nodes will only contain a id_str field)
 \item Create edges between main users and their respective blank friends
 \item Set the sampled_friends_at property for nodes that were sampled
 }}
 \usage{
 add_friend_edges_to_nodes_in_graph(
-  user_ids,
+  users,
   n,
   retryonratelimit,
   cursor,
@@ -21,20 +21,20 @@ add_friend_edges_to_nodes_in_graph(
 )
 }
 \arguments{
-\item{user_ids}{a list of user_ids to add friend edges to the db for}
+\item{users}{a list of users to add friend edges to the db for}
 
 \item{n}{how many friends to sample at a time for each user}
 
 \item{cache}{the cache to interface with}
 }
 \value{
-a 2-column tibble edge list from user_ids to their friends
+a 2-column tibble edge list from users to their friends
 }
 \description{
-user_ids is a list of COMPLETELY NEW users. This function performs the following:
+users is a list of COMPLETELY NEW users. This function performs the following:
 \enumerate{
-\item Fetch the friends of each user (call these main users) listed in user_ids (call these blank friends)
-\item MERGE nodes for main users and blank friends (each of these nodes will only contain a user_id field)
+\item Fetch the friends of each user (call these main users) listed in users (call these blank friends)
+\item MERGE nodes for main users and blank friends (each of these nodes will only contain a id_str field)
 \item Create edges between main users and their respective blank friends
 \item Set the sampled_friends_at property for nodes that were sampled
 }

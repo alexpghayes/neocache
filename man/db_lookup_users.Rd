@@ -4,15 +4,15 @@
 \alias{db_lookup_users}
 \title{Looks up users that are already in the database.}
 \usage{
-db_lookup_users(user_ids, cache)
+db_lookup_users(users, cache)
 }
 \arguments{
-\item{user_ids}{list of user_ids to fetch existing lookup_user data for in the db}
+\item{users}{list of users to fetch existing lookup_user data for in the db}
 
 \item{cache}{the cache to interface with}
 }
 \value{
-a tibble with any existing data for user_ids
+a tibble with any existing data for users
 }
 \description{
 Looks up users that are already in the database.

@@ -4,12 +4,12 @@
 \alias{db_add_new_users}
 \title{Merges a batch of nodes to the graph with nothing but user_id's}
 \usage{
-db_add_new_users(user_ids, cache)
+db_add_new_users(users, cache)
 }
 \arguments{
-\item{user_ids}{a vector of user_ids to generate MERGE queries for}
-
 \item{cache}{the cache to interface with}
+
+\item{user_ids}{a vector of user_ids to generate MERGE queries for}
 }
 \description{
 Merges a batch of nodes to the graph with nothing but user_id's

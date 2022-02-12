@@ -6,12 +6,7 @@
 \alias{neocache-package}
 \title{neocache: Save Data from the Twitter API to a Neo4J Graph Database}
 \description{
-Facilitates robust sampling of the Twitter graph by saving
-    data about observed nodes into a data cache. Requests for new nodes
-    are smart and do not waste API requests on nodes already in the cache.
-    The cache can then be exported to a number of data structures more
-    appropriate for network analysis. Automatically manages multiple
-    tokens to speed up sampling with staying with API rate limits.
+Facilitates robust sampling of the Twitter graph by saving data about observed nodes into a data cache. Requests for new nodes are smart and do not waste API requests on nodes already in the cache. The cache can then be exported to a number of data structures more appropriate for network analysis. Automatically manages multiple tokens to speed up sampling with staying with API rate limits.
 }
 \seealso{
 Useful links:

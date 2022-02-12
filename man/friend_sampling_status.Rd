@@ -5,10 +5,10 @@
 \title{Checks whether friend data has already been sampled for the provided
 vector of users.}
 \usage{
-friend_sampling_status(user_ids, cache)
+friend_sampling_status(users, cache)
 }
 \arguments{
-\item{user_ids}{to fetch the sampling status for}
+\item{users}{to fetch the sampling status for}
 
 \item{cache}{the cache to interface with}
 }

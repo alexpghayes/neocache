@@ -2,11 +2,11 @@
 % Please edit documentation in R/get_friends.R
 \name{nc_get_friends}
 \alias{nc_get_friends}
-\title{Fetches the friends of each of the users contained in the user_ids vector.
+\title{Fetches the friends of each of the users contained in the users vector.
 Returns the friend relationships via a tibble edge list.}
 \usage{
 nc_get_friends(
-  user_ids,
+  users,
   cache_name,
   n = 5000,
   retryonratelimit = TRUE,
@@ -16,6 +16,10 @@ nc_get_friends(
 )
 }
 \arguments{
+\item{users}{Screen name or user ID of target user from which the
+user IDs of friends (accounts followed BY target user) will be
+retrieved.}
+
 \item{n}{Desired number of results to return. Results are downloaded
 in pages when \code{n} is large; the default value will download a single
 page. Set \code{n = Inf} to download as many results as possible.
@@ -31,7 +35,7 @@ a multiple of page size, e.g. if you request \code{n = 150} and the page
 size is 200, you'll get 200 results back.}
 
 \item{retryonratelimit}{If \code{TRUE}, and a rate limit is exhausted, will wait
-until it refreshes. Most twitter rate limits refresh every 15 minutes.
+until it refreshes. Most Twitter rate limits refresh every 15 minutes.
 If \code{FALSE}, and the rate limit is exceeded, the function will terminate
 early with a warning; you'll still get back all results received up to
 that point. The default value, \code{NULL}, consults the option
@@ -60,6 +64,6 @@ A tibble where each row corresponds to a follower relationship
 from the user in the 'from' column to the user in to 'to' column
 }
 \description{
-Fetches the friends of each of the users contained in the user_ids vector.
+Fetches the friends of each of the users contained in the users vector.
 Returns the friend relationships via a tibble edge list.
 }
