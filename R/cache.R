@@ -42,14 +42,14 @@ nc_create_cache <- function(cache_name, neo4j_pass = "password", http_port = 747
     stop(glue("bolt port must be unique amongst caches and port {bolt_port} is already assigned to another cache."))
   }
 
-  log_trace("Creating {cache_name} Docker container...")
+  log_trace(glue("Creating {cache_name} Docker container..."))
 
   if (!create_docker_container(cache_name, neo4j_pass, http_port, bolt_port)) {
     stop(glue("Failed to create the {cache_name} Docker container."))
   }
 
 
-  log_trace("Creating {cache_name} Docker container ... done")
+  log_trace(glue("Creating {cache_name} Docker container ... done"))
 
   cache_metadata <- list(
     container_name = cache_name,
@@ -74,7 +74,7 @@ nc_create_cache <- function(cache_name, neo4j_pass = "password", http_port = 747
 
   log_trace("Creating unique user_id constraint in Neo4J database ... done")
 
-  invisible(NULL)
+  invisible(cache)
 }
 
 
@@ -82,6 +82,21 @@ nc_create_cache <- function(cache_name, neo4j_pass = "password", http_port = 747
 #' @export
 print.neocache_metadata <- function(x, ...) {
   cat(glue("Neocache [name = {x$container_name}, url = {x$url}]"))
+}
+
+
+#' Title
+#'
+#' @param x
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+nc_browse <- function(cache_name) {
+  cache <- get_cache(cache_name)
+  browseURL(cache$url)
 }
 
 
