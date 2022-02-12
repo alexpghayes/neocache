@@ -24,6 +24,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -36,18 +38,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">neocache</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.0.0.9001</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.0.0.9002</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
@@ -66,7 +62,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/alexpghayes/neocache/">
+  <a href="https://github.com/alexpghayes/neocache/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -84,50 +80,51 @@
       </header><div class="row">
   <div class="contents col-md-9">
 
-<div id="neocache" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#neocache" class="anchor"></a>neocache</h1></div>
+<div class="section level1">
+<div class="page-header"><h1 id="neocache">neocache<a class="anchor" aria-label="anchor" href="#neocache"></a>
+</h1></div>
 <!-- badges: start -->
 
-<p><code>neocache</code> facilitates robust sampling of the Twitter graph. The basic idea is to save any data into a local cache as you as you get it. <code>neocache</code> is build on top of <a href="https://github.com/alexpghayes/socialsampler"><code>socialsampler</code></a> and <a href="https://rtweet.info/"><code>rtweet</code></a>.</p>
+<p><code>neocache</code> facilitates robust sampling of the Twitter graph. The basic idea is to save any data into a local cache as you as you get it. <code>neocache</code> is build on top of <a href="https://github.com/alexpghayes/socialsampler" class="external-link"><code>socialsampler</code></a> and <a href="https://rtweet.info/" class="external-link"><code>rtweet</code></a>.</p>
 <p>Please see the <code>socialsampler</code> documentation for information on how to register Twitter tokens.</p>
-<div id="installation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#installation" class="anchor"></a>Installation</h2>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
 <p>You can install the development version of <code>neocache</code> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"alexpghayes/neocache"</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="running-neo4j-through-docker" class="section level2">
-<h2 class="hasAnchor">
-<a href="#running-neo4j-through-docker" class="anchor"></a>Running Neo4J through Docker</h2>
+<div class="section level2">
+<h2 id="running-neo4j-through-docker">Running Neo4J through Docker<a class="anchor" aria-label="anchor" href="#running-neo4j-through-docker"></a>
+</h2>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="ex">docker</span> run --name neo4j --env NEO4J_AUTH=neo4j/password --publish=7474:7474 --publish=7687:7687 -d neo4j:3.5.21</span></code></pre></div>
 </div>
 </div>
-<div id="ignore-everything-below-here" class="section level1">
-<h1 class="hasAnchor">
-<a href="#ignore-everything-below-here" class="anchor"></a>Ignore everything below here</h1>
-<div id="inspect-the-current-neocache" class="section level2">
-<h2 class="hasAnchor">
-<a href="#inspect-the-current-neocache" class="anchor"></a>Inspect the current neocache</h2>
+<div class="section level1">
+<h1 id="ignore-everything-below-here">Ignore everything below here<a class="anchor" aria-label="anchor" href="#ignore-everything-below-here"></a>
+</h1>
+<div class="section level2">
+<h2 id="inspect-the-current-neocache">Inspect the current neocache<a class="anchor" aria-label="anchor" href="#inspect-the-current-neocache"></a>
+</h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/alexpghayes/neocache">neocache</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/alexpghayes/neocache" class="external-link">neocache</a></span><span class="op">)</span>
 
 <span class="fu">print_cache</span><span class="op">(</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="what-kind-of-data-can-i-cache" class="section level2">
-<h2 class="hasAnchor">
-<a href="#what-kind-of-data-can-i-cache" class="anchor"></a>What kind of data can I cache?</h2>
+<div class="section level2">
+<h2 id="what-kind-of-data-can-i-cache">What kind of data can I cache?<a class="anchor" aria-label="anchor" href="#what-kind-of-data-can-i-cache"></a>
+</h2>
 <ul>
 <li>edges</li>
 <li>nodes</li>
 <li>you can get information on nodes without getting information on edges</li>
 </ul>
 </div>
-<div id="rtweet-replacements" class="section level2">
-<h2 class="hasAnchor">
-<a href="#rtweet-replacements" class="anchor"></a><code>rtweet</code> replacements</h2>
+<div class="section level2">
+<h2 id="rtweet-replacements">
+<code>rtweet</code> replacements<a class="anchor" aria-label="anchor" href="#rtweet-replacements"></a>
+</h2>
 <ul>
 <li>Use <code>cache_lookup_users()</code> instead of <code>lookup_users()</code>
 </li>
@@ -137,17 +134,17 @@
 </li>
 </ul>
 </div>
-<div id="get-the-cached-data" class="section level2">
-<h2 class="hasAnchor">
-<a href="#get-the-cached-data" class="anchor"></a>Get the cached data</h2>
+<div class="section level2">
+<h2 id="get-the-cached-data">Get the cached data<a class="anchor" aria-label="anchor" href="#get-the-cached-data"></a>
+</h2>
 <ul>
 <li>Use <code>get_node_table()</code> and <code>get_edge_table()</code>
 </li>
 </ul>
 </div>
-<div id="frequently-asked-questions" class="section level2">
-<h2 class="hasAnchor">
-<a href="#frequently-asked-questions" class="anchor"></a>Frequently asked questions</h2>
+<div class="section level2">
+<h2 id="frequently-asked-questions">Frequently asked questions<a class="anchor" aria-label="anchor" href="#frequently-asked-questions"></a>
+</h2>
 <p><strong>How do you manage the API rate limits?</strong></p>
 <p>Currently we just sample one node a minute. This complies with the Twitter API rate limits, but only if you don’t use the registered tokens for anything else while sampling.</p>
 <p><strong>Where is the cache itself?</strong></p>
@@ -158,9 +155,9 @@
 <p><strong>What happens when I try to sample protected users?</strong></p>
 <p>We remove these users from the sample at export time.</p>
 </div>
-<div id="contributing" class="section level2">
-<h2 class="hasAnchor">
-<a href="#contributing" class="anchor"></a>Contributing</h2>
+<div class="section level2">
+<h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
+</h2>
 <p>Please note that the <code>neocache</code> project is released with a <a href="CODE_OF_CONDUCT.html">Contributor Code of Conduct</a>.</p>
 <p>By contributing to this project, you agree to abide by its terms.</p>
 </div>
@@ -170,52 +167,64 @@
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="links">
-<h2>Links</h2>
+<h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li>Browse source code at <br><a href="https://github.com/alexpghayes/neocache/">https://​github.com/​alexpghayes/​neocache/​</a>
-</li>
-<li>Report a bug at <br><a href="https://github.com/alexpghayes/neocache/issues">https://​github.com/​alexpghayes/​neocache/​issues</a>
-</li>
+<li><a href="https://github.com/alexpghayes/neocache/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/alexpghayes/neocache/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
+
 <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
-<li><small><a href="https://www.r-project.org/Licenses/GPL-3">GPL-3</a></small></li>
+<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
 </ul>
 </div>
+
 <div class="community">
-<h2>Community</h2>
+<h2 data-toc-skip>Community</h2>
 <ul class="list-unstyled">
 <li><a href="CODE_OF_CONDUCT.html">Code of conduct</a></li>
 </ul>
 </div>
-<div class="developers">
-<h2>Developers</h2>
+
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
 <ul class="list-unstyled">
-<li>
-<a href="https://alexpghayes.com">Alex Hayes</a> <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-4985-5160" target="orcid.widget" aria-label="ORCID"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li><a href="authors.html#citation">Citing neocache</a></li>
 </ul>
 </div>
 
-  <div class="dev-status">
-<h2>Dev status</h2>
+<div class="developers">
+<h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li><a href="https://codecov.io/gh/alexpghayes/neocache?branch=master"><img src="https://codecov.io/gh/alexpghayes/neocache/branch/master/graph/badge.svg" alt="Codecov test coverage"></a></li>
-<li><a href="https://github.com/alexpghayes/neocache/actions"><img src="https://github.com/alexpghayes/neocache/workflows/R-CMD-check/badge.svg" alt="R build status"></a></li>
+<li>
+<a href="https://alexpghayes.com" class="external-link">Alex Hayes</a> <br><small class="roles"> Author, maintainer, copyright holder </small> <a href="https://orcid.org/0000-0002-4985-5160" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li>Nathan Kolbow <br><small class="roles"> Author </small>  </li>
 </ul>
 </div>
+
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://codecov.io/gh/alexpghayes/neocache?branch=master" class="external-link"><img src="https://codecov.io/gh/alexpghayes/neocache/branch/master/graph/badge.svg" alt="Codecov test coverage"></a></li>
+<li><a href="https://github.com/alexpghayes/neocache/actions" class="external-link"><img src="https://github.com/alexpghayes/neocache/workflows/R-CMD-check/badge.svg" alt="R build status"></a></li>
+</ul>
 </div>
+
+  </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by <a href="https://alexpghayes.com">Alex Hayes</a>.</p>
+  <p></p>
+<p>Developed by <a href="https://alexpghayes.com" class="external-link">Alex Hayes</a>, Nathan Kolbow.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer>
@@ -223,6 +232,8 @@
 
   
 
+
+  
 
   </body>
 </html>

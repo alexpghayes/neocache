@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,18 +33,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">neocache</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.0.0.9001</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.0.0.9002</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -61,7 +57,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/alexpghayes/neocache/">
+  <a href="https://github.com/alexpghayes/neocache/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -82,17 +78,17 @@
       <h1 data-toc-skip>Design</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/alexpghayes/neocache/blob/master/vignettes/design.Rmd"><code>vignettes/design.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/alexpghayes/neocache/blob/HEAD/vignettes/design.Rmd" class="external-link"><code>vignettes/design.Rmd</code></a></small>
       <div class="hidden name"><code>design.Rmd</code></div>
 
     </div>
 
     
     
-<p><code>neocache</code> is designed to cache information from the Twitter API to a <a href="https://neo4j.com/">Neo4J</a> database to facilitate long term data collection, in particular of the following graph. We use Neo4J to enable fast graphical operations such as neighborhood queries. A previous iteration of <code>neocache</code> called <code>twittercache</code> used a traditional SQL database to store the following graph, and ran into scaling issues. Since Neo4J can be complicated to install, we run it through a local <a href="https://www.docker.com/">Docker</a> container. You will need to install docker to use <code>neocache.</code> We use the <a href="https://richfitz.github.io/stevedore/"><code>stevedore</code></a> R package to programmatically interact with Docker.</p>
-<div id="neo4j-data-model" class="section level2">
-<h2 class="hasAnchor">
-<a href="#neo4j-data-model" class="anchor"></a>Neo4J Data Model</h2>
+<p><code>neocache</code> is designed to cache information from the Twitter API to a <a href="https://neo4j.com/" class="external-link">Neo4J</a> database to facilitate long term data collection, in particular of the following graph. We use Neo4J to enable fast graphical operations such as neighborhood queries. A previous iteration of <code>neocache</code> called <code>twittercache</code> used a traditional SQL database to store the following graph, and ran into scaling issues. Since Neo4J can be complicated to install, we run it through a local <a href="https://www.docker.com/" class="external-link">Docker</a> container. You will need to install docker to use <code>neocache.</code> We use the <a href="https://richfitz.github.io/stevedore/" class="external-link"><code>stevedore</code></a> R package to programmatically interact with Docker.</p>
+<div class="section level2">
+<h2 id="neo4j-data-model">Neo4J Data Model<a class="anchor" aria-label="anchor" href="#neo4j-data-model"></a>
+</h2>
 <p>Neo4J uses the labelled property graph model. The elements of the labeled property graph model are nodes, relationships, properties, and labels.</p>
 <ul>
 <li>Nodes contain properties. Properties are key-value pairs where the key is a string and the value is a semi-arbitrary value</li>
@@ -101,13 +97,13 @@
 <li>Relationships can have properties, just like nodes.</li>
 </ul>
 </div>
-<div id="neo4j-schema" class="section level2">
-<h2 class="hasAnchor">
-<a href="#neo4j-schema" class="anchor"></a>Neo4J Schema</h2>
+<div class="section level2">
+<h2 id="neo4j-schema">Neo4J Schema<a class="anchor" aria-label="anchor" href="#neo4j-schema"></a>
+</h2>
 <p>In our database, we will represent each Twitter user and each tweet as a node. We will indicate that user A follows user B by adding an edge from user A to user B. The edge will have the label <code>Follows</code>.</p>
-<div id="nodes-and-node-labels" class="section level3">
-<h3 class="hasAnchor">
-<a href="#nodes-and-node-labels" class="anchor"></a>Nodes and node labels</h3>
+<div class="section level3">
+<h3 id="nodes-and-node-labels">Nodes and node labels<a class="anchor" aria-label="anchor" href="#nodes-and-node-labels"></a>
+</h3>
 <ul>
 <li>User: a user in the Twitter graph. Nodes with User label should have the following properties:</li>
 <li>sampled_at <dttm>: Takes on a sentinel NULL value to indicate user has not yet been fully sampled, but partial user information was added to the graph at some point. Otherwise a datetime indicate when full information from lookup_users() was added to the graph.</dttm>
@@ -211,9 +207,9 @@
 </li>
 </ul>
 </div>
-<div id="edges" class="section level3">
-<h3 class="hasAnchor">
-<a href="#edges" class="anchor"></a>Edges</h3>
+<div class="section level3">
+<h3 id="edges">Edges<a class="anchor" aria-label="anchor" href="#edges"></a>
+</h3>
 <ul>
 <li>follows: A relationship strictly between two Users. For example, both <span class="citation">@alexpghayes</span> and <span class="citation">@karlrohe</span> follow each other.</li>
 <li>tweeted: A relationship between a User and a Tweet</li>
@@ -224,12 +220,12 @@
 </ul>
 </div>
 </div>
-<div id="psuedocode" class="section level2">
-<h2 class="hasAnchor">
-<a href="#psuedocode" class="anchor"></a>Psuedocode</h2>
-<div id="representation-of-the-database" class="section level3">
-<h3 class="hasAnchor">
-<a href="#representation-of-the-database" class="anchor"></a>Representation of the database</h3>
+<div class="section level2">
+<h2 id="psuedocode">Psuedocode<a class="anchor" aria-label="anchor" href="#psuedocode"></a>
+</h2>
+<div class="section level3">
+<h3 id="representation-of-the-database">Representation of the database<a class="anchor" aria-label="anchor" href="#representation-of-the-database"></a>
+</h3>
 <p>In some preliminary work, we found that the fastest way to send data to the Neo4J database was not over the HTTPs connection, but rather to write to a csv, move the csv into the Docker filesystem, and then use read the csv back into Neo4J. This implies that we should abstract the concept of a <code>cache</code> object that contains all the information necessary to ultimately interact with the underlying Neo4J database. This turns out to consist of two things:</p>
 <ul>
 <li>An active HTTPs connection to a running Neo4J database, represented by a <code>neo4r::connexion</code> object</li>
@@ -243,13 +239,13 @@
   <span class="co"># use cli to ask to the user what to do if a cache with that name</span>
   <span class="co"># already exists. either overwrite, or stop.</span>
   
-  <span class="va">cache</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+  <span class="va">cache</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
     name <span class="op">=</span> <span class="va">cache_name</span>,
     docker_container_name <span class="op">=</span> <span class="va">...</span>,
     <span class="va">...</span>
   <span class="op">)</span>
   
-  <span class="fu"><a href="https://rdrr.io/r/base/class.html">class</a></span><span class="op">(</span><span class="va">cache</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"neocache"</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">cache</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"neocache"</span>
   
   <span class="co"># create a docker container to host the cache's Neo4J database. be sure to</span>
   <span class="co"># overwrite an existing container if the user has requested it</span>
@@ -263,10 +259,10 @@
 <span class="op">}</span></code></pre></div>
 <p>The idea is then that in any code that uses <code>neocache</code>, we want the user to explicitly select the cache they want to save data into. That is, before</p>
 </div>
-<div id="cached-api-calls" class="section level3">
-<h3 class="hasAnchor">
-<a href="#cached-api-calls" class="anchor"></a>Cached API Calls</h3>
-<p>Here we describe some pseudocode for drop in replacements for <code><a href="https://rdrr.io/pkg/rtweet/man/lookup_users.html">rtweet::lookup_users()</a></code>, <code><a href="https://rdrr.io/pkg/rtweet/man/get_friends.html">rtweet::get_friends()</a></code> and <code><a href="https://rdrr.io/pkg/rtweet/man/get_followers.html">rtweet::get_followers()</a></code>. In the following our goal will always be to minimize both queries to the Neo4J data base and the Twitter API.</p>
+<div class="section level3">
+<h3 id="cached-api-calls">Cached API Calls<a class="anchor" aria-label="anchor" href="#cached-api-calls"></a>
+</h3>
+<p>Here we describe some pseudocode for drop in replacements for <code><a href="https://rdrr.io/pkg/rtweet/man/lookup_users.html" class="external-link">rtweet::lookup_users()</a></code>, <code><a href="https://rdrr.io/pkg/rtweet/man/get_friends.html" class="external-link">rtweet::get_friends()</a></code> and <code><a href="https://rdrr.io/pkg/rtweet/man/get_followers.html" class="external-link">rtweet::get_followers()</a></code>. In the following our goal will always be to minimize both queries to the Neo4J data base and the Twitter API.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">#' @param users A character vector of user ids (never screen names)</span>
 <span class="co">#'</span>
@@ -277,10 +273,10 @@
 <span class="co">#'</span>
 <span class="va">lookup_users</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">users</span><span class="op">)</span> <span class="op">{</span>
   <span class="va">user_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/db_lookup_users.html">db_lookup_users</a></span><span class="op">(</span><span class="va">users</span><span class="op">)</span>
-  <span class="va">not_in_graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html">setdiff</a></span><span class="op">(</span><span class="va">users</span>, <span class="va">user_data</span><span class="op">$</span><span class="va">user_id</span><span class="op">)</span>
+  <span class="va">not_in_graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="va">users</span>, <span class="va">user_data</span><span class="op">$</span><span class="va">user_id</span><span class="op">)</span>
   <span class="va">new_user_data</span> <span class="op">&lt;-</span> <span class="fu">add_new_users</span><span class="op">(</span><span class="va">not_in_graph</span><span class="op">)</span>
   <span class="va">not_sampled</span> <span class="op">&lt;-</span> <span class="va">user_data</span> <span class="op">%&gt;`%</span>
-    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">sampled_at</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;`%</span>
+    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">sampled_at</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;`%</span>
     <span class="fu">pull</span><span class="op">(</span><span class="va">user_id</span><span class="op">)</span>
   <span class="va">upgraded_user_data</span> <span class="op">&lt;-</span> <span class="fu">sample_existing_users</span><span class="op">(</span><span class="va">not_sampled</span><span class="op">)</span>
   <span class="fu">bind_rows</span><span class="op">(</span><span class="va">user_data</span>, <span class="va">new_user_data</span>, <span class="va">upgraded_user_data</span><span class="op">)</span>
@@ -350,7 +346,7 @@
 
 <span class="va">friend_sampling_status</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">users</span><span class="op">)</span> <span class="op">{</span>
   <span class="co"># generate based on queries of user.sampled_friends_at node property</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
     not_in_graph <span class="op">=</span> <span class="va">...</span>,
     sampled_friends_at_is_null <span class="op">=</span> <span class="va">...</span>,
     sampled_friends_at_not_null <span class="op">=</span> <span class="va">...</span>
@@ -358,9 +354,9 @@
 <span class="op">}</span></code></pre></div>
 </div>
 </div>
-<div id="misc-thoughts" class="section level2">
-<h2 class="hasAnchor">
-<a href="#misc-thoughts" class="anchor"></a>Misc thoughts</h2>
+<div class="section level2">
+<h2 id="misc-thoughts">Misc thoughts<a class="anchor" aria-label="anchor" href="#misc-thoughts"></a>
+</h2>
 <ul>
 <li><p>A fair amount of information may be missing for any given User node; we need to carefully think about the various states a User node might be in and how this will impact various graph queries</p></li>
 <li><p>Any user generated text is liable to contain Unicode abominations</p></li>
@@ -370,9 +366,9 @@
 <li>To think about: user states: healthy, banned, suspected, removed, etc, etc</li>
 </ul>
 </div>
-<div id="cache-design-dump" class="section level2">
-<h2 class="hasAnchor">
-<a href="#cache-design-dump" class="anchor"></a>Cache design dump</h2>
+<div class="section level2">
+<h2 id="cache-design-dump">Cache design dump<a class="anchor" aria-label="anchor" href="#cache-design-dump"></a>
+</h2>
 <p>cache in one of two states: active or inactive. active means docker container is running</p>
 <p>library(neocache) 12:27 # 1 user creates a cache (once). this cache object gets saved to <code>~/.cache/neocache/{neocache_name}.rds</code> 12:28 when the user wants to do stuff, then first tell neocache to gets things running in the background cache &lt;- use_cache(“{neocache_name”) start_cache(cache) – starts docker 12:28 and then all the API calls need to explicitly use the cache 12:29 friends &lt;- get_friends(…, cache = cache) 12:32 each cache gets its own docker container</p>
 </div>
@@ -389,11 +385,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by <a href="https://alexpghayes.com">Alex Hayes</a>.</p>
+  <p></p>
+<p>Developed by <a href="https://alexpghayes.com" class="external-link">Alex Hayes</a>, Nathan Kolbow.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer>
@@ -401,6 +399,8 @@
 
   
 
+
+  
 
   </body>
 </html>
