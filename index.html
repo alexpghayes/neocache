@@ -79,14 +79,12 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-
 <div class="section level1">
 <div class="page-header"><h1 id="neocache">neocache<a class="anchor" aria-label="anchor" href="#neocache"></a>
 </h1></div>
 <!-- badges: start -->
 
-<p><code>neocache</code> facilitates robust sampling of the Twitter graph. The basic idea is to save any data into a local cache as you as you get it. <code>neocache</code> is build on top of <a href="https://github.com/alexpghayes/socialsampler" class="external-link"><code>socialsampler</code></a> and <a href="https://rtweet.info/" class="external-link"><code>rtweet</code></a>.</p>
-<p>Please see the <code>socialsampler</code> documentation for information on how to register Twitter tokens.</p>
+<p><code>neocache</code> facilitates robust sampling of the Twitter graph. The basic idea is to save any data into a local cache as you as you get it. <code>neocache</code> is build on top of <a href="https://rtweet.info/" class="external-link"><code>rtweet</code></a>, Docker, and Neo4J.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -94,75 +92,17 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"alexpghayes/neocache"</span><span class="op">)</span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="running-neo4j-through-docker">Running Neo4J through Docker<a class="anchor" aria-label="anchor" href="#running-neo4j-through-docker"></a>
-</h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="ex">docker</span> run --name neo4j --env NEO4J_AUTH=neo4j/password --publish=7474:7474 --publish=7687:7687 -d neo4j:3.5.21</span></code></pre></div>
-</div>
-</div>
-<div class="section level1">
-<h1 id="ignore-everything-below-here">Ignore everything below here<a class="anchor" aria-label="anchor" href="#ignore-everything-below-here"></a>
-</h1>
-<div class="section level2">
-<h2 id="inspect-the-current-neocache">Inspect the current neocache<a class="anchor" aria-label="anchor" href="#inspect-the-current-neocache"></a>
-</h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/alexpghayes/neocache" class="external-link">neocache</a></span><span class="op">)</span>
 
-<span class="fu">print_cache</span><span class="op">(</span><span class="op">)</span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="what-kind-of-data-can-i-cache">What kind of data can I cache?<a class="anchor" aria-label="anchor" href="#what-kind-of-data-can-i-cache"></a>
-</h2>
-<ul>
-<li>edges</li>
-<li>nodes</li>
-<li>you can get information on nodes without getting information on edges</li>
-</ul>
-</div>
-<div class="section level2">
-<h2 id="rtweet-replacements">
-<code>rtweet</code> replacements<a class="anchor" aria-label="anchor" href="#rtweet-replacements"></a>
-</h2>
-<ul>
-<li>Use <code>cache_lookup_users()</code> instead of <code>lookup_users()</code>
-</li>
-<li>Use <code>cache_get_friends()</code> instead of <code>get_friends()</code>
-</li>
-<li>Use <code>cache_get_followers()</code> instead of <code>get_followers()</code>
-</li>
-</ul>
-</div>
-<div class="section level2">
-<h2 id="get-the-cached-data">Get the cached data<a class="anchor" aria-label="anchor" href="#get-the-cached-data"></a>
-</h2>
-<ul>
-<li>Use <code>get_node_table()</code> and <code>get_edge_table()</code>
-</li>
-</ul>
-</div>
-<div class="section level2">
-<h2 id="frequently-asked-questions">Frequently asked questions<a class="anchor" aria-label="anchor" href="#frequently-asked-questions"></a>
-</h2>
-<p><strong>How do you manage the API rate limits?</strong></p>
-<p>Currently we just sample one node a minute. This complies with the Twitter API rate limits, but only if you don’t use the registered tokens for anything else while sampling.</p>
-<p><strong>Where is the cache itself?</strong></p>
-<p>It’s at <code>~/.twittergraph/</code>.</p>
-<p><strong>What about users with big follower counts? Do you sample all the followers?</strong></p>
-<p>No. We only sample up to 5,000 friends and 5,000 followers. This is mostly because I’m lazy and also it’s wasteful to spend API calls on someone with tons of followers.</p>
-<p>Recall that you can pick up an edge in the network from either node. We recommend trying to make sure the node with smaller degree is in your sample.</p>
-<p><strong>What happens when I try to sample protected users?</strong></p>
-<p>We remove these users from the sample at export time.</p>
-</div>
-<div class="section level2">
-<h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
-</h2>
-<p>Please note that the <code>neocache</code> project is released with a <a href="CODE_OF_CONDUCT.html">Contributor Code of Conduct</a>.</p>
-<p>By contributing to this project, you agree to abide by its terms.</p>
+<span class="fu"><a href="reference/nc_sitrep.html">nc_sitrep</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ── Caches ──────────────────────────────────────────────────────────────────────</span>
+<span class="co">#&gt;   - get_friends_test (active) </span>
+<span class="co">#&gt;   - HQWHHAKFKLRTCZLNQOSQ (active) </span>
+<span class="co">#&gt;   - test_cache (active)</span></code></pre></div>
 </div>
 </div>
-
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -208,8 +148,8 @@
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://codecov.io/gh/alexpghayes/neocache?branch=master" class="external-link"><img src="https://codecov.io/gh/alexpghayes/neocache/branch/master/graph/badge.svg" alt="Codecov test coverage"></a></li>
-<li><a href="https://github.com/alexpghayes/neocache/actions" class="external-link"><img src="https://github.com/alexpghayes/neocache/workflows/R-CMD-check/badge.svg" alt="R build status"></a></li>
+<li><a href="https://github.com/alexpghayes/neocache/actions" class="external-link"><img src="https://github.com/alexpghayes/neocache/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://codecov.io/gh/alexpghayes/neocache?branch=main" class="external-link"><img src="https://codecov.io/gh/alexpghayes/neocache/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></li>
 </ul>
 </div>
 
