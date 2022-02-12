@@ -1,6 +1,9 @@
 library(rtweet)
+library(logger)
 
 auth_as("default")
+
+log_threshold(FATAL, namespace = "neocache")
 
 test_ids <- c("780429268866052096", "1191642560")
 

@@ -1,7 +1,7 @@
 library(rtweet)
-
 library(logger)
-log_level(DEBUG)
+
+log_level(FATAL)
 
 auth_as("default")
 
@@ -15,7 +15,7 @@ if (!nc_cache_exists("get_friends_test")) {
 
 nc_empty_cache("get_friends_test", check_with_me_first = FALSE)
 
-test_that("stuff", {
+test_that("basic test", {
   first_call <- nc_get_friends(test_ids[1], "get_friends_test")
   second_call <- nc_get_friends(test_ids[1], "get_friends_test")
 
@@ -33,14 +33,17 @@ test_that("stuff", {
   fourth_call <- nc_get_friends(test_ids, "get_friends_test")
 
   expect_equal(
-    colnames(first_call),
-    colnames(third_call)
-  )
-
-  expect_equal(
-    colnames(first_call),
+    colnames(third_call),
     colnames(fourth_call)
   )
 
-  expect_equal(third_call, fourth_call)
+  # order of edges might not match up since we don't guarantee that
+
+  third_sorted <- third_call %>%
+    arrange(from_id, to_id)
+
+  fourth_sorted <- fourth_call %>%
+    arrange(from_id, to_id)
+
+  expect_equal(third_sorted, fourth_sorted)
 })
