@@ -17,7 +17,12 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Alex Hayes \email{alexpghayes@gmail.com} (\href{https://orcid.org/0000-0002-4985-5160}{ORCID})
+\strong{Maintainer}: Alex Hayes \email{alexpghayes@gmail.com} (\href{https://orcid.org/0000-0002-4985-5160}{ORCID}) [copyright holder]
+
+Authors:
+\itemize{
+  \item Nathan Kolbow \email{nkolbow@wisc.edu}
+}
 
 }
 \keyword{internal}
