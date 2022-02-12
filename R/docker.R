@@ -14,12 +14,12 @@ remove_docker_container <- function(container_name) {
 
 docker_container_exists <- function(container_name) {
   code <- system("docker container ls --all", intern = TRUE)
-  any(endsWith(code, container_name))
+  any(stringr::str_detect(code, glue(" {container_name}$")))
 }
 
 is_docker_container_running <- function(container_name) {
   code <- system("docker container ls", intern = TRUE)
-  any(endsWith(code, container_name))
+  any(stringr::str_detect(code, glue(" {container_name}$")))
 }
 
 find_docker <- function() {
