@@ -26,7 +26,7 @@ query_neo4j <- function(query, cache, ...) {
   # https://stackoverflow.com/questions/65035810/is-it-possible-to-handle-simple-messages-in-r-if-yes-how
   # which is where this code comes from.
 
-  # this is too fancy for you future alex, if shit break do something simple
+  # this is too fancy for you future alex, if shit breaks do something simple
   # instead of wasting a day trying to figure this out
 
   withCallingHandlers(
@@ -50,22 +50,20 @@ query_neo4j <- function(query, cache, ...) {
 #'
 #' @return the same tibble edge list that was provided as an argument
 docker_bulk_connect_nodes <- function(tbl, cache) {
-  # Create temp file to write the data into
+
   tmp <- tempfile()
 
-  # Write the data; we use cat instead of write to eliminate any trailing newline
-  cat(paste0("to,from\n", paste0('"', tbl$to, '","', tbl$from, '"', collapse = "\n")), file = tmp)
+  # use cat instead of write to eliminate any trailing newline
+  cat(paste0("from_id,to_id\n", paste0('"', tbl$from_id, '","', tbl$to_id, '"', collapse = "\n")), file = tmp)
 
   copy_csv_to_docker(tmp, "data.csv", cache$container_name)
 
-  # Add a node for each of the root user's friends and connect the root user to them
-  ## This query runs on joe50k in ~2.75 minutes
-  connect_qry <- glue(
+  connect_query <- glue(
     "LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row ",
-    "MATCH (to:User {{user_id:row.to}}) MATCH (from:User {{user_id:row.from}}) CREATE (from)-[:FOLLOWS]->(to)"
+    "MATCH (from:User {{id_str:row.from_id}}) MATCH (to:User {{id_str:row.to_id}}) CREATE (from)-[:FOLLOWS]->(to)"
   )
 
-  query_neo4j(connect_qry, cache)
+  query_neo4j(connect_query, cache)
 
   tbl
 }
@@ -75,19 +73,16 @@ docker_bulk_connect_nodes <- function(tbl, cache) {
 #'
 #' @param user_ids a vector of user_ids to generate MERGE queries for
 #' @param cache the cache to interface with
-db_add_new_users <- function(user_ids, cache) {
+db_add_new_users <- function(users, cache) {
   tmp <- tempfile()
 
-  cat(paste0("user_id\n", paste0('"', user_ids, '"', collapse = "\n")), file = tmp)
+  cat(paste0("id_str\n", paste0('"', users, '"', collapse = "\n")), file = tmp)
 
   copy_csv_to_docker(tmp, "data.csv", cache$container_name)
 
-  add_qry <- glue("LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row MERGE (n:User {{user_id:row.user_id}})")
+  add_qry <- glue("LOAD CSV WITH HEADERS FROM 'file:///data.csv' AS row MERGE (n:User {{id_str:row.id_str}})")
   query_neo4j(add_qry, cache)
 }
-
-
-
 
 
 #' Gets the followers for the given user that already exist in the DB.
@@ -101,9 +96,9 @@ db_add_new_users <- function(user_ids, cache) {
 db_get_followers <- function(user_ids, cache) {
   query_neo4j(
     paste0(
-      'WITH "MATCH (from:User),(to:User) WHERE to.user_id in [\\\'',
+      'WITH "MATCH (from:User),(to:User) WHERE to.id_str in [\\\'',
       glue_collapse(user_ids, sep = "\\',\\'"),
-      '\\\'] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id" AS query ',
+      '\\\'] AND (from)-[:FOLLOWS]->(to) RETURN from.id_str, to.id_str" AS query ',
       'CALL apoc.export.csv.query(query, "get_friends.csv", {}) YIELD file RETURN file'
     ),
     cache
@@ -115,8 +110,8 @@ db_get_followers <- function(user_ids, cache) {
   results <- readr::read_csv(
     tmp,
     col_types = readr::cols(
-      from.user_id = readr::col_character(),
-      to.user_id = readr::col_character()
+      from.id_str = readr::col_character(),
+      to.id_str = readr::col_character()
     )
   )
 
@@ -124,7 +119,7 @@ db_get_followers <- function(user_ids, cache) {
     return(empty_edge_list())
   }
 
-  tibble(from = results$from.user_id, to = results$to.user_id)
+  tibble(from_id = results$from.id_str, to_id = results$to.id_str)
 }
 
 #' Title
@@ -141,8 +136,8 @@ nc_export_all_follows <- function(cache_name, local_path) {
     'CALL apoc.export.csv.query(',
     '"MATCH (a)-[r:FOLLOWS]->(b) ',
     'RETURN ',
-    'a.user_id AS from, ',
-    'b.user_id AS to", ',
+    'a.id_str AS from, ',
+    'b.id_str AS to", ',
     '"relationships.csv", null)'
   )
 
@@ -176,7 +171,7 @@ nc_export_all_users <- function(cache_name, local_path) {
 
   query <- glue(
     'CALL apoc.export.csv.query("MATCH (u:User) RETURN ',
-    'u.user_id AS user_id, ',
+    'u.id_str AS id_str, ',
     'u.screen_name AS screen_name, ',
     'u.protected AS protected, ',
     'u.followers_count AS followers_count, ',

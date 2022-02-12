@@ -1,4 +1,4 @@
-#' Fetches the friends of each of the users contained in the user_ids vector.
+#' Fetches the friends of each of the users contained in the users vector.
 #' Returns the friend relationships via a tibble edge list.
 #'
 #' @param cache The name of the cache to save data in.
@@ -8,24 +8,24 @@
 #' from the user in the 'from' column to the user in to 'to' column
 #'
 #' @export
-nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = TRUE, cursor = "-1", verbose = TRUE, token = NULL) {
+nc_get_friends <- function(users, cache_name, n = 5000, retryonratelimit = TRUE, cursor = "-1", verbose = TRUE, token = NULL) {
   # here we will need to query twice: once to ask who we actually
   # have *complete* friendship edges for, and then a second time to get
   # those friendship edges
 
-  log_trace(glue("nc_get_friends(): {user_ids}"))
+  log_trace(glue("nc_get_friends(): {users}"))
 
   cache <- nc_activate_cache(cache_name)
 
-  log_trace(glue("Getting friend sampling status for {length(user_ids)} users ..."))
+  log_trace(glue("Getting friend sampling status for {length(users)} users ..."))
 
-  status <- friend_sampling_status(user_ids, cache)
+  status <- friend_sampling_status(users, cache)
 
   num_not_in_graph <- length(status$not_in_graph)
 
   log_trace(
     glue(
-      "Getting friend sampling status for {length(user_ids)} users ... ",
+      "Getting friend sampling status for {length(users)} users ... ",
       "{length(status$sampled_friends_at_not_null)} in graph with friends already sampled / ",
       "{length(status$sampled_friends_at_is_null)} in graph with friends not already sampled / ",
       "{num_not_in_graph} not in graph",
@@ -42,7 +42,8 @@ nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = TR
 
   # status might be character(0) for any set of these things
 
-  new_edges <- add_friend_edges_to_nodes_in_graph(status$not_in_graph,
+  new_edges <- add_friend_edges_to_nodes_in_graph(
+    status$not_in_graph,
     n = n,
     retryonratelimit = retryonratelimit,
     cursor = cursor,
@@ -51,7 +52,8 @@ nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = TR
     cache = cache
   )
 
-  upgraded_edges <- add_friend_edges_to_nodes_in_graph(status$sampled_friends_at_is_null,
+  upgraded_edges <- add_friend_edges_to_nodes_in_graph(
+    status$sampled_friends_at_is_null,
     n = n,
     retryonratelimit = retryonratelimit,
     cursor = cursor,
@@ -79,22 +81,22 @@ nc_get_friends <- function(user_ids, cache_name, n = 5000, retryonratelimit = TR
 }
 
 
-#' user_ids is a list of COMPLETELY NEW users. This function performs the following:
-#'   1. Fetch the friends of each user (call these main users) listed in user_ids (call these blank friends)
-#'   2. MERGE nodes for main users and blank friends (each of these nodes will only contain a user_id field)
+#' users is a list of COMPLETELY NEW users. This function performs the following:
+#'   1. Fetch the friends of each user (call these main users) listed in users (call these blank friends)
+#'   2. MERGE nodes for main users and blank friends (each of these nodes will only contain a id_str field)
 #'   3. Create edges between main users and their respective blank friends
 #'   4. Set the sampled_friends_at property for nodes that were sampled
 #'
-#' @param user_ids a list of user_ids to add friend edges to the db for
+#' @param users a list of users to add friend edges to the db for
 #' @param n how many friends to sample at a time for each user
 #' @param cache the cache to interface with
 #'
-#' @return a 2-column tibble edge list from user_ids to their friends
-add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cursor, verbose, token, cache) {
+#' @return a 2-column tibble edge list from users to their friends
+add_friend_edges_to_nodes_in_graph <- function(users, n, retryonratelimit, cursor, verbose, token, cache) {
 
-  log_trace(glue("add_friend_edges_to_nodes_in_graph(): {user_ids}"))
+  log_trace(glue("add_friend_edges_to_nodes_in_graph(): {users}"))
 
-  if (length(user_ids) < 1) {
+  if (length(users) < 1) {
     return(empty_edge_list())
   }
 
@@ -105,10 +107,10 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
   tryCatch(
     expr = {
 
-      log_info(glue("Making API request with rtweet::get_friends for {length(user_ids)} users"))
+      log_info(glue("Making API request with rtweet::get_friends for {length(users)} users"))
 
       edge_list <<- rtweet::get_friends(
-        users = user_ids,
+        users = users,
         n = n,
         retryonratelimit = retryonratelimit,
         cursor = cursor,
@@ -117,14 +119,14 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
         token = token
       )
 
-      log_trace(glue("Making API request with rtweet::get_friends for: {user_ids} ... results received."))
+      log_trace(glue("Making API request with rtweet::get_friends for: {users} ... results received."))
       log_trace(glue("Parsing results from API ... "))
 
       if (is.null(edge_list)) {
         stop("Results from API are `NULL`. This may be due to authentication failure.")
       } else if (NCOL(edge_list) == 2) {
 
-        edge_list <<- rename(edge_list, from = .data$user, to = .data$ids)
+        edge_list <<- rename(edge_list, from_id = .data$from_id, to_id = .data$to_id)
         log_trace(glue("Parsing results from API ... columns renamed."))
       } else {
         log_warn(
@@ -137,7 +139,7 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
       }
 
       log_trace(glue("Parsing results from API ... done."))
-      log_trace(glue("Parsed friend list of {length(user_ids)} users returned from API:"))
+      log_trace(glue("Parsed friend list of {length(users)} users returned from API:"))
       log_trace(edge_list, style = "simple")
     },
     error = function(cnd) {
@@ -149,7 +151,7 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
 
       log_warn(
         glue(
-          "Making API request with rtweet::get_friends for {length(user_ids)} users ... ",
+          "Making API request with rtweet::get_friends for {length(users)} users ... ",
           "API request failed. Condition message: {msg}",
           .trim = FALSE
         )
@@ -161,7 +163,7 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
       if (grepl("401", msg)) {
         log_warn(
           glue(
-            "Making API request with rtweet::get_friends for {length(user_ids)} users ... ",
+            "Making API request with rtweet::get_friends for {length(users)} users ... ",
             "401 error likely due to invalid user id, adding user to Neo4J DB ",
             "and  treating as if user has empty friend list.",
             .trim = FALSE
@@ -171,7 +173,7 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
       } else if (grepl("404", msg)) {
         log_warn(
           glue(
-            "Making API request with rtweet::get_friends for {length(user_ids)} users ... ",
+            "Making API request with rtweet::get_friends for {length(users)} users ... ",
             "404 error likely due to invalid user id, adding user to Neo4J DB ",
             "and treating as if user has empty friend list.",
             .trim = FALSE
@@ -184,7 +186,7 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
     }
   )
 
-  need_to_be_present_in_graph <- c(user_ids, edge_list$to)
+  need_to_be_present_in_graph <- c(users, edge_list$to_id)
 
   log_trace(glue("Adding up to {length(need_to_be_present_in_graph)} new users to Neo4J DB ..."))
 
@@ -196,16 +198,16 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
   docker_bulk_connect_nodes(edge_list, cache)
 
   log_trace(glue("Adding {NROW(edge_list)} edges from API result into Neo4J graph ... done"))
-  log_trace(glue("Setting sampled_friends_at for {length(user_ids)} users ..."))
+  log_trace(glue("Setting sampled_friends_at for {length(users)} users ..."))
 
   set_sampled_at_query <- glue(
-    'WITH ["', glue_collapse(user_ids, sep = '","'), '"] AS user_ids UNWIND user_ids AS id ',
-    'MATCH (n:User {{user_id:id}}) SET n.sampled_friends_at = "{sample_time}"'
+    'WITH ["', glue_collapse(users, sep = '","'), '"] AS users UNWIND users AS id ',
+    'MATCH (n:User {{id_str:id}}) SET n.sampled_friends_at = "{sample_time}"'
   )
 
   query_neo4j(set_sampled_at_query, cache)
 
-  log_trace(glue("Setting sampled_friends_at for {length(user_ids)} users ... done"))
+  log_trace(glue("Setting sampled_friends_at for {length(users)} users ... done"))
 
   edge_list
 }
@@ -213,30 +215,30 @@ add_friend_edges_to_nodes_in_graph <- function(user_ids, n, retryonratelimit, cu
 #' Checks whether friend data has already been sampled for the provided
 #' vector of users.
 #'
-#' @param user_ids to fetch the sampling status for
+#' @param users to fetch the sampling status for
 #' @param cache the cache to interface with
 #'
 #' @return a list of all users who either (1) are not currently in the
 #' graph, (2) are in the graph but their friends have not been sampled,
 #' (3) are in the graph and have sampled friends
-friend_sampling_status <- function(user_ids, cache) {
+friend_sampling_status <- function(users, cache) {
 
   # it might be possible to speed this up with a more focused query
   # than that used in db_lookup_users() -- in particular, potentially
   # could do less reading and writing to disk?
 
-  log_trace(glue("friend_sampling_status(): {user_ids}"))
+  log_trace(glue("friend_sampling_status(): {users}"))
 
   # might be a tibble with zero rows if no users are present in graph
-  present_users <- db_lookup_users(user_ids, cache)
+  present_users <- db_lookup_users(users, cache)
 
-  not_in_graph <- setdiff(user_ids, present_users$user_id)
+  not_in_graph <- setdiff(users, present_users$id_str)
 
   unsampled_users <- present_users %>%
     filter(is.na(.data$sampled_friends_at)) %>%
-    pull(.data$user_id)
+    pull(.data$id_str)
 
-  sampled_users <- setdiff(user_ids, c(unsampled_users, not_in_graph))
+  sampled_users <- setdiff(users, c(unsampled_users, not_in_graph))
 
   # all of these take value character(0) when empty
   list(
@@ -248,24 +250,24 @@ friend_sampling_status <- function(user_ids, cache) {
 
 #' Gets the friends for the given user that already exist in the DB.
 #'
-#' @param user_ids a list of user_ids who are already in the DB and
+#' @param users a list of users who are already in the DB and
 #' already have friend edge data
 #' @param cache the cache to interface with
 #'
-#' @return a 2-column tibble edge list with entries from the users in user_ids
+#' @return a 2-column tibble edge list with entries from the users in users
 #' to their friends
-db_get_friends <- function(user_ids, cache) {
+db_get_friends <- function(users, cache) {
 
-  log_trace(glue("db_get_friends(): {user_ids}"))
+  log_trace(glue("db_get_friends(): {users}"))
 
-  if (length(user_ids) < 1) {
+  if (length(users) < 1) {
     return(empty_edge_list())
   }
 
   friend_query <- paste0(
-    'WITH "MATCH (from:User),(to:User) WHERE from.user_id in [\\\'',
-    glue_collapse(user_ids, sep = "\\',\\'"),
-    '\\\'] AND (from)-[:FOLLOWS]->(to) RETURN from.user_id, to.user_id" AS query ',
+    'WITH "MATCH (from:User),(to:User) WHERE from.id_str in [\\\'',
+    glue_collapse(users, sep = "\\',\\'"),
+    '\\\'] AND (from)-[:FOLLOWS]->(to) RETURN from.id_str, to.id_str" AS query ',
     'CALL apoc.export.csv.query(query, "get_friends.csv", {}) YIELD file RETURN file'
   )
 
@@ -280,8 +282,8 @@ db_get_friends <- function(user_ids, cache) {
   results <- readr::read_csv(
     tmp,
     col_types = readr::cols(
-      from.user_id = readr::col_character(),
-      to.user_id = readr::col_character()
+      from.id_str = readr::col_character(),
+      to.id_str = readr::col_character()
     )
   )
 
@@ -291,5 +293,5 @@ db_get_friends <- function(user_ids, cache) {
     return(empty_edge_list())
   }
 
-  tibble(from = results$from.user_id, to = results$to.user_id)
+  tibble(from_id = results$from.id_str, to_id = results$to.id_str)
 }
