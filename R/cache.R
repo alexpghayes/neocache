@@ -66,11 +66,11 @@ nc_create_cache <- function(cache_name, neo4j_pass = "password", http_port = 747
   log_trace(glue("Writing cache metadata to {cache_save_path}"))
   write_rds(cache_metadata, cache_save_path)
 
-  log_trace("Creating unique user_id constraint in Neo4J database ... ")
+  log_trace("Creating unique id_str constraint in Neo4J database ... ")
 
   cache <- nc_activate_cache(cache_name)
 
-  query_neo4j("CREATE CONSTRAINT ON (n:User) ASSERT n.user_id IS UNIQUE", cache)
+  query_neo4j("CREATE CONSTRAINT ON (n:User) ASSERT n.id_str IS UNIQUE", cache)
 
   log_trace("Creating unique user_id constraint in Neo4J database ... done")
 
