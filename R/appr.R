@@ -58,6 +58,7 @@ neocache_graph <- function(cache_name = "aPPR", retryonratelimit = TRUE) {
 #'
 #'
 #' @seealso [aPPR::appr()]
+#' @method appr neocache_graph
 #'
 #' @export
 appr.neocache_graph <- function(graph, seeds, ..., alpha = 0.15,
