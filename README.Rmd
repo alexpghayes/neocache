@@ -17,10 +17,10 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/alexpghayes/neocache/workflows/R-CMD-check/badge.svg)](https://github.com/alexpghayes/neocache/actions)
-[![Codecov test coverage](https://codecov.io/gh/alexpghayes/neocache/branch/main/graph/badge.svg)](https://codecov.io/gh/alexpghayes/neocache?branch=main)
+[![Codecov test coverage](https://codecov.io/gh/alexpghayes/neocache/branch/main/graph/badge.svg)](https://app.codecov.io/gh/alexpghayes/neocache?branch=main)
 <!-- badges: end -->
 
-`neocache` facilitates robust sampling of the Twitter graph. The basic idea is to save any data into a local cache as you as you get it. `neocache` is build on top of [`rtweet`](https://rtweet.info/), Docker, and Neo4J.
+`neocache` facilitates robust sampling of the Twitter graph. The basic idea is to save any data into a local cache as you as you get it. `neocache` is build on top of [`rtweet`](https://docs.ropensci.org/rtweet/), Docker, and Neo4J.
 
 ## Installation
 
@@ -38,8 +38,6 @@ nc_sitrep()
 ```
 
 ### Find the personalized pagerank of a Twitter user and cache the following network in the process
-
-**NOTE**: As of January 2022, the following does not work due to a change in the `rtweet` dev version that we have not yet updated `neocache` to accommodate.
 
 ```{r neocache-example, eval = FALSE}
 alexpghayes_ppr <- appr(

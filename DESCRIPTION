@@ -10,8 +10,7 @@ Description: Facilitates robust sampling of the Twitter graph by saving
     data about observed nodes into a data cache. Requests for new nodes
     are smart and do not waste API requests on nodes already in the cache.
     The cache can then be exported to a number of data structures more
-    appropriate for network analysis. Automatically manages multiple
-    tokens to speed up sampling with staying with API rate limits.
+    appropriate for network analysis.
 License: MIT + file LICENSE
 URL: https://github.com/alexpghayes/neocache
 BugReports: https://github.com/alexpghayes/neocache/issues
