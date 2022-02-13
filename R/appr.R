@@ -88,7 +88,10 @@ appr.neocache_graph <- function(graph, seeds, ..., alpha = 0.15,
   NextMethod()
 }
 
+#' @export
 #' @importFrom glue glue
+#' @importFrom aPPR check
+#' @method check neocache_graph
 check.neocache_graph <- function(graph, nodes) {
 
   log_debug(glue("Checking nodes"))
@@ -105,9 +108,12 @@ check.neocache_graph <- function(graph, nodes) {
 
   log_debug(glue("Done checking nodes"))
 
-  node_data$user_id[good_nodes]
+  node_data$id_str[good_nodes]
 }
 
+#' @export
+#' @importFrom aPPR node_degrees
+#' @method node_degrees neocache_graph
 node_degrees.neocache_graph <- function(graph, nodes) {
 
   log_debug(glue("Getting node degrees"))
@@ -127,6 +133,9 @@ node_degrees.neocache_graph <- function(graph, nodes) {
   )
 }
 
+#' @export
+#' @importFrom aPPR neighborhood
+#' @method neighborhood neocache_graph
 neighborhood.neocache_graph <- function(graph, node) {
 
   log_debug(glue("Getting neighborhood: {node}"))
