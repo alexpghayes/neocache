@@ -146,5 +146,5 @@ neighborhood.neocache_graph <- function(graph, node) {
 
   log_debug(glue("Done getting neighborhood"))
 
-  if (nrow(friends) < 1) character(0) else friends$to
+  if (nrow(friends) < 1) character(0) else friends$to_id
 }
