@@ -128,7 +128,7 @@ add_lookup_users_info_to_nodes_in_graph <- function(users, token, retryonratelim
 
       log_trace(glue("Parsing results from API ... done."))
       log_trace(glue("Parsed user data of {length(users)} users returned from API:"))
-      log_trace(select(user_info_raw, twitter_properties))
+      log_trace(select(user_info_raw, any_of(twitter_properties)))
     },
     error = function(cnd) {
 
@@ -170,7 +170,7 @@ add_lookup_users_info_to_nodes_in_graph <- function(users, token, retryonratelim
 
   user_info <- tibble(id_str = users) %>%
     left_join(user_info_raw, by = "id_str") %>%
-    select(id_str, all_of(twitter_properties)) %>%
+    select(id_str, any_of(twitter_properties)) %>%
     mutate(
       sampled_at = as.character(Sys.time()),
       created_at = as.character(created_at)
