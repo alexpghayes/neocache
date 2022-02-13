@@ -25,6 +25,13 @@
 #'
 neocache_graph <- function(cache_name = "aPPR", retryonratelimit = TRUE) {
 
+  if (!requireNamespace("aPPR", quietly = TRUE)) {
+    stop(
+      "`aPPR` package must be installed to use `neocache_graph()`",
+      call. = FALSE
+    )
+  }
+
   if (!nc_cache_exists(cache_name)) {
     nc_create_cache(cache_name = cache_name, http_port = 28491, bolt_port = 28492)
   }

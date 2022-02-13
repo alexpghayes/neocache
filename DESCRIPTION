@@ -31,7 +31,7 @@ Imports:
     usethis,
     vctrs
 Suggests: 
-    aPPR,
+    aPPR (>= 0.0.0.9103),
     covr,
     knitr,
     rmarkdown,
@@ -42,3 +42,5 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
+Remotes:  
+    RoheLab/aPPR
