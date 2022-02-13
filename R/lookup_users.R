@@ -108,8 +108,6 @@ add_lookup_users_info_to_nodes_in_graph <- function(users, token, retryonratelim
     return(empty_user())
   }
 
-  user_info_raw <- NULL
-
   tryCatch(
     expr = {
       log_info(glue("Making API request with rtweet::lookup_users  for {length(users)} users"))

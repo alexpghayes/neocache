@@ -103,7 +103,6 @@ add_friend_edges_to_nodes_in_graph <- function(users, n, retryonratelimit, curso
   sample_time <- Sys.time()
 
   # make sure data returned by API is in the right scope
-  edge_list <- NULL
 
   tryCatch(
     expr = {
