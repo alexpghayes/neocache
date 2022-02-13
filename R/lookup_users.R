@@ -26,7 +26,7 @@ nc_lookup_users <- function(users, cache_name, token = NULL, retryonratelimit = 
   user_data <- db_lookup_users(users, cache)
 
   log_trace("User data found in Neo4J database:")
-  log_trace(select(user_data, id_str, screen_name, sampled_at), style = "simple")
+  log_trace(select(user_data, id_str, screen_name, sampled_at))
 
   sampled_data <- filter(user_data, !is.na(.data$sampled_at))
 
@@ -48,7 +48,7 @@ nc_lookup_users <- function(users, cache_name, token = NULL, retryonratelimit = 
     upgraded_user_data <- add_lookup_users_info_to_nodes_in_graph(not_sampled_ids, token, retryonratelimit, verbose, cache)
 
     log_trace(glue("User data found from Twitter for {length(not_sampled_ids)} users already in graph:"))
-    log_trace(select(upgraded_user_data, id_str, screen_name, sampled_at), style = "simple")
+    log_trace(select(upgraded_user_data, id_str, screen_name, sampled_at))
   } else {
 
     log_debug(glue("Did not need data from Twitter API for any users already in graph."))
@@ -71,7 +71,7 @@ nc_lookup_users <- function(users, cache_name, token = NULL, retryonratelimit = 
     new_user_data <- add_lookup_users_info_to_nodes_in_graph(not_in_graph_ids, token, retryonratelimit, verbose, cache)
 
     log_trace(glue("User data found from Twitter for {length(not_in_graph_ids)} users not in graph:"))
-    log_trace(select(new_user_data, id_str, screen_name, sampled_at), style = "simple")
+    log_trace(select(new_user_data, id_str, screen_name, sampled_at))
   } else {
     log_trace("Did not need to add any new nodes to Neo4J.")
     new_user_data <- empty_user()
@@ -128,7 +128,7 @@ add_lookup_users_info_to_nodes_in_graph <- function(users, token, retryonratelim
 
       log_trace(glue("Parsing results from API ... done."))
       log_trace(glue("Parsed user data of {length(users)} users returned from API:"))
-      log_trace(select(user_info_raw, twitter_properties), style = "simple")
+      log_trace(select(user_info_raw, twitter_properties))
     },
     error = function(cnd) {
 
@@ -166,7 +166,7 @@ add_lookup_users_info_to_nodes_in_graph <- function(users, token, retryonratelim
 
   log_debug(glue("Received information on {nrow(user_info_raw)} users."))
   log_trace("user_info_raw is: ")
-  log_trace(select(user_info_raw, id_str, screen_name), style = "simple")
+  log_trace(select(user_info_raw, id_str, screen_name))
 
   user_info <- tibble(id_str = users) %>%
     left_join(user_info_raw, by = "id_str") %>%
