@@ -2,16 +2,10 @@
 % Please edit documentation in R/cache.R
 \name{nc_browse}
 \alias{nc_browse}
-\title{Title}
+\title{Interact with a cached graph via the Neo4J browser interface}
 \usage{
 nc_browse(cache_name)
 }
-\arguments{
-\item{...}{}
-}
-\value{
-
-}
 \description{
-Title
+Interact with a cached graph via the Neo4J browser interface
 }

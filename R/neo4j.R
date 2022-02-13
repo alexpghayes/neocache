@@ -122,10 +122,10 @@ db_get_followers <- function(user_ids, cache) {
   tibble(from_id = results$from.id_str, to_id = results$to.id_str)
 }
 
-#' Title
+#' Export all follows from the Neo4J database to a csv
 #'
-#' @param cache_name
-#' @param local_path
+#' @inheritParams nc_cache_exists
+#' @param local_path path of csv
 #'
 #' @export
 nc_export_all_follows <- function(cache_name, local_path) {
@@ -159,42 +159,20 @@ nc_export_all_follows <- function(cache_name, local_path) {
   log_info(glue("All Follows relationships in {cache_name} cache exported to {local_path}"))
 }
 
-#' Title
+#' Export all users from the Neo4J database to a csv
 #'
-#' @param cache_name
-#' @param local_path
+#' @inheritParams nc_export_all_follows
 #'
 #' @export
 nc_export_all_users <- function(cache_name, local_path) {
   cache <- nc_activate_cache(cache_name)
   log_trace(glue("Exporting all Users from {cache_name} cache to `users.csv` in Docker ..."))
 
-  query <- glue(
-    'CALL apoc.export.csv.query("MATCH (u:User) RETURN ',
-    'u.id_str AS id_str, ',
-    'u.screen_name AS screen_name, ',
-    'u.protected AS protected, ',
-    'u.followers_count AS followers_count, ',
-    'u.friends_count AS friends_count, ',
-    'u.listed_count AS listed_count, ',
-    'u.statuses_count AS statuses_count, ',
-    'u.favourites_count AS favourites_count, ',
-    'u.account_created_at AS account_created_at, ',
-    'u.verified AS verified, ',
-    'u.profile_url AS profile_url, ',
-    'u.profile_expanded_url AS profile_expanded_url, ',
-    'u.account_lang AS account_lang, ',
-    'u.profile_banner_url AS profile_banner_url, ',
-    'u.profile_background_url AS profile_background_url, ',
-    'u.profile_image_url AS profile_image_url, ',
-    'u.name AS name, ',
-    'u.location AS location, ',
-    'u.description AS description, ',
-    'u.url AS url, ',
-    'u.sampled_at AS sampled_at, ',
-    'u.sampled_friends_at AS sampled_friends_at, ',
-    'u.sampled_followers_at AS sampled_followers_at", ',
-    '"./users.csv", null)'
+  query <- paste(
+    c('CALL apoc.export.csv.query("MATCH (u:User) RETURN ',
+      glue('n.{all_properties} AS {all_properties}'),
+      '"./users.csv", null)'),
+    collapse = " "
   )
 
   # TODO: parse call_status to check from done: true, for now assume
@@ -214,48 +192,3 @@ nc_export_all_users <- function(cache_name, local_path) {
   log_trace(glue("Removing `users.csv` from {cache_name} Docker container ... done"))
   log_info(glue("All User nodes in {cache_name} cache exported to {local_path}"))
 }
-
-#' Title
-#'
-#' @param cache_name
-#' @param local_path
-#'
-#' @export
-nc_export_subgraph_follows <- function(cache_name, local_path) {
-  cache <- nc_activate_cache(cache_name)
-  log_trace(glue("Exporting all FOLLOWS edges to CSV in Docker ..."))
-
-  query <- 'CALL apoc.export.csv.query("MATCH (a)-[r:FOLLOWS]->(b) RETURN a, b", "./relationships.csv", null)'
-  query_neo4j(query, cache)
-
-  log_trace(glue("Exporting all FOLLOWS edges to CSV in Docker ... done"))
-  log_trace(glue("Copying FOLLOWS CSV out of Docker ..."))
-
-  copy_csv_from_docker("relationships.csv", local_path, cache_name)
-  log_trace(glue("Copying FOLLOWS CSV out of Docker ... done"))
-
-  log_info(glue("FOLLOWS relationships available as CSV at {local_path}"))
-}
-
-#' Title
-#'
-#' @param cache_name
-#' @param local_path
-#'
-#' @export
-nc_export_subgraph_users <- function(cache_name, local_path) {
-  cache <- nc_activate_cache(cache_name)
-  log_trace(glue("Exporting all FOLLOWS edges to CSV in Docker ..."))
-
-  query <- 'CALL apoc.export.csv.query("MATCH (a)-[r:FOLLOWS]->(b) RETURN a, b", "./relationships.csv", null)'
-  query_neo4j(query, cache)
-
-  log_trace(glue("Exporting all FOLLOWS edges to CSV in Docker ... done"))
-  log_trace(glue("Copying FOLLOWS CSV out of Docker ..."))
-
-  copy_csv_from_docker("relationships.csv", local_path, cache_name)
-  log_trace(glue("Copying FOLLOWS CSV out of Docker ... done"))
-
-  log_info(glue("FOLLOWS relationships available as CSV at {local_path}"))
-}
-

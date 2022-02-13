@@ -2,13 +2,13 @@
 % Please edit documentation in R/neo4j.R
 \name{nc_export_all_follows}
 \alias{nc_export_all_follows}
-\title{Title}
+\title{Export all follows from the Neo4J database to a csv}
 \usage{
 nc_export_all_follows(cache_name, local_path)
 }
 \arguments{
-\item{local_path}{}
+\item{local_path}{path of csv}
 }
 \description{
-Title
+Export all follows from the Neo4J database to a csv
 }

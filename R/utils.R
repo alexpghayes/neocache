@@ -9,3 +9,14 @@
 #' @importFrom magrittr %>%
 #' @usage lhs \%>\% rhs
 NULL
+
+utils::globalVariables(
+  c(
+    "created_at",
+    "edge_list",
+    "id_str",
+    "sampled_at",
+    "screen_name",
+    "user_info_raw"
+  )
+)

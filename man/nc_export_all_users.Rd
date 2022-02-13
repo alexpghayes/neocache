@@ -2,13 +2,13 @@
 % Please edit documentation in R/neo4j.R
 \name{nc_export_all_users}
 \alias{nc_export_all_users}
-\title{Title}
+\title{Export all users from the Neo4J database to a csv}
 \usage{
 nc_export_all_users(cache_name, local_path)
 }
 \arguments{
-\item{local_path}{}
+\item{local_path}{path of csv}
 }
 \description{
-Title
+Export all users from the Neo4J database to a csv
 }

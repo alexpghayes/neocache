@@ -85,24 +85,20 @@ print.neocache_metadata <- function(x, ...) {
 }
 
 
-#' Title
+#' Interact with a cached graph via the Neo4J browser interface
 #'
-#' @param x
-#' @param ...
+#' @inheritParams nc_cache_exists
 #'
-#' @return
 #' @export
-#'
-#' @examples
 nc_browse <- function(cache_name) {
   cache <- get_cache(cache_name)
-  browseURL(cache$url)
+  utils::browseURL(cache$url)
 }
 
 
 #' Retrieves a previously generated cache object.
 #'
-#' @param cache_name the name of the cache to use
+#' @inheritParams nc_cache_exists
 #' @return a list object containing information pertaining to the associated
 #'         Docker container and Neo4j instance
 #'
@@ -130,7 +126,7 @@ get_cache <- function(cache_name) {
 
 #' Starts the Docker container and Neo4j instance for the given cache
 #'
-#' @param cache the cache object that the user wishes to start
+#' @inheritParams nc_cache_exists
 #'
 #' @keywords internal
 #'
@@ -204,7 +200,7 @@ is_active <- function(cache) {
 
 #' Stops the Docker container and Neo4j instance for the given cache
 #'
-#' @param cache the cache object that the user wishes to start
+#' @inheritParams nc_cache_exists
 #'
 #' @keywords internal
 #'
@@ -222,7 +218,7 @@ nc_deactivate_cache <- function(cache_name) {
 #' Removes the Docker container and cache save file corresponding to the given
 #' cache
 #'
-#' @param cache the cache object that the user wishes to start
+#' @inheritParams nc_cache_exists
 #'
 #' @importFrom rappdirs app_dir
 #'
@@ -272,9 +268,10 @@ cache_path <- function(cache_name) {
 
 #' Remove all data from a cache
 #'
-#' @param cache_name TODO
+#' @inheritParams nc_cache_exists
+#' @param check_with_me_first Whether or not to confirm choice to empty
+#'   cache via CLI menu before clearing the cache
 #'
-#' @return
 #' @export
 #'
 nc_empty_cache <- function(cache_name, check_with_me_first = TRUE) {
@@ -293,9 +290,9 @@ nc_empty_cache <- function(cache_name, check_with_me_first = TRUE) {
 
 #' Check if a cache with a given name exists
 #'
-#' @param cache_name
+#' @inheritParams nc_cache_exists
 #'
-#' @return
+#' @return `TRUE` or `FALSE`.
 #' @export
 #'
 nc_cache_exists <- function(cache_name) {

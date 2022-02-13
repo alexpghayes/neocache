@@ -6,9 +6,6 @@
 \usage{
 get_cache(cache_name)
 }
-\arguments{
-\item{cache_name}{the name of the cache to use}
-}
 \value{
 a list object containing information pertaining to the associated
 Docker container and Neo4j instance

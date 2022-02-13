@@ -1,9 +1,16 @@
-properties <-c(
+twitter_properties <- c(
   "id", "id_str", "name", "screen_name", "location", "description",
   "url", "protected", "followers_count", "friends_count", "listed_count",
   "created_at", "favourites_count", "verified", "statuses_count",
   "profile_image_url_https", "profile_banner_url", "default_profile",
   "default_profile_image"
+)
+
+all_properties <- c(
+  twitter_properties,
+  "sampled_at",
+  "sampled_friends_at",
+  "sampled_followers_at"
 )
 
 #' Create an empty table of user data

@@ -6,9 +6,6 @@
 \usage{
 nc_deactivate_cache(cache_name)
 }
-\arguments{
-\item{cache}{the cache object that the user wishes to start}
-}
 \description{
 Stops the Docker container and Neo4j instance for the given cache
 }

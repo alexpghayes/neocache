@@ -6,11 +6,8 @@
 \usage{
 nc_cache_exists(cache_name)
 }
-\arguments{
-\item{cache_name}{}
-}
 \value{
-
+\code{TRUE} or \code{FALSE}.
 }
 \description{
 Check if a cache with a given name exists
