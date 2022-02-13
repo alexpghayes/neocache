@@ -8,9 +8,12 @@ vector of users.}
 friend_sampling_status(users, cache)
 }
 \arguments{
-\item{users}{to fetch the sampling status for}
+\item{users}{Screen name or user ID of target user from which the
+user IDs of friends (accounts followed BY target user) will be
+retrieved.}
 
-\item{cache}{the cache to interface with}
+\item{cache}{The cache to store information in. Must be a cache, not a
+cache name.}
 }
 \value{
 a list of all users who either (1) are not currently in the

@@ -6,6 +6,9 @@
 \usage{
 nc_cache_exists(cache_name)
 }
+\arguments{
+\item{cache_name}{the name of the cache and associated Docker container}
+}
 \value{
 \code{TRUE} or \code{FALSE}.
 }

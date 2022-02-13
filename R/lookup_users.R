@@ -4,12 +4,7 @@
 #' cached data for users who have already been looked up, and fetches new
 #' data for users who have not bee looked up yet from the Twitter API.
 #'
-#' @param users Character vector of Twitter user ids. **DO NOT**
-#'   pass Twitter screen names, as `users` are taken to be unique
-#'   node identifiers.
-#'
-#' @param cache A `cache` object. See [nc_create_cache()].
-#'
+#' @inheritParams nc_create_cache
 #' @inheritParams rtweet::lookup_users
 #'
 #' @return A tibble where each row corresponds to a User and each column
@@ -95,8 +90,8 @@ nc_lookup_users <- function(users, cache_name, token = NULL, retryonratelimit = 
 
 #' Fetches the user's lookup_users data then updates their info in the graph.
 #'
-#' @param users a vector of users. do NOT pass screen names
-#' @param cache the cache to interface with
+#' @param cache A `cache` object. See [nc_create_cache()].
+#' @inheritParams nc_lookup_users
 #'
 #' @return tibble of user data
 add_lookup_users_info_to_nodes_in_graph <- function(users, token, retryonratelimit, verbose, cache) {
@@ -112,6 +107,8 @@ add_lookup_users_info_to_nodes_in_graph <- function(users, token, retryonratelim
   if (length(users) == 0) {
     return(empty_user())
   }
+
+  user_info_raw <- NULL
 
   tryCatch(
     expr = {
@@ -162,7 +159,7 @@ add_lookup_users_info_to_nodes_in_graph <- function(users, token, retryonratelim
             .trim = FALSE
           )
         )
-        edge_list <<- empty_edge_list()
+        user_info_raw <<- empty_user()
       } else {
         stop(cnd)
       }
@@ -224,8 +221,7 @@ add_lookup_users_info_to_nodes_in_graph <- function(users, token, retryonratelim
 
 #' Looks up users that are already in the database.
 #'
-#' @param users list of users to fetch existing lookup_user data for in the db
-#' @param cache the cache to interface with
+#' @inheritParams add_lookup_users_info_to_nodes_in_graph
 #'
 #' @return a tibble with any existing data for users
 db_lookup_users <- function(users, cache) {

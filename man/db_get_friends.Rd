@@ -7,10 +7,12 @@
 db_get_friends(users, cache)
 }
 \arguments{
-\item{users}{a list of users who are already in the DB and
-already have friend edge data}
+\item{users}{Screen name or user ID of target user from which the
+user IDs of friends (accounts followed BY target user) will be
+retrieved.}
 
-\item{cache}{the cache to interface with}
+\item{cache}{The cache to store information in. Must be a cache, not a
+cache name.}
 }
 \value{
 a 2-column tibble edge list with entries from the users in users

@@ -13,9 +13,9 @@ nc_lookup_users(
 )
 }
 \arguments{
-\item{users}{Character vector of Twitter user ids. \strong{DO NOT}
-pass Twitter screen names, as \code{users} are taken to be unique
-node identifiers.}
+\item{users}{User id or screen name of target user.}
+
+\item{cache_name}{the name of the cache and associated Docker container}
 
 \item{token}{Expert use only. Use this to override authentication for
 a single API call. In most cases you are better off changing the
@@ -35,8 +35,6 @@ failure modes like temporarily losing your internet connection.}
 
 \item{verbose}{Show progress bars and other messages indicating current
 progress?}
-
-\item{cache}{A \code{cache} object. See \code{\link[=nc_create_cache]{nc_create_cache()}}.}
 }
 \value{
 A tibble where each row corresponds to a User and each column

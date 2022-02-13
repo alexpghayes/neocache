@@ -8,7 +8,7 @@ tbl argument.}
 docker_bulk_connect_nodes(tbl, cache)
 }
 \arguments{
-\item{tbl}{tibble containing columns for 'to' and 'from' consisting of user_ids}
+\item{tbl}{tibble containing columns for 'to' and 'from' consisting of users}
 
 \item{cache}{the cache to interface with}
 }

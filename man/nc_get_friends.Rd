@@ -20,6 +20,8 @@ nc_get_friends(
 user IDs of friends (accounts followed BY target user) will be
 retrieved.}
 
+\item{cache_name}{The name of the cache to save data in.}
+
 \item{n}{Desired number of results to return. Results are downloaded
 in pages when \code{n} is large; the default value will download a single
 page. Set \code{n = Inf} to download as many results as possible.
@@ -56,8 +58,6 @@ progress?}
 \item{token}{Expert use only. Use this to override authentication for
 a single API call. In most cases you are better off changing the
 default for all calls. See \code{\link[rtweet:auth_as]{auth_as()}} for details.}
-
-\item{cache}{The name of the cache to save data in.}
 }
 \value{
 A tibble where each row corresponds to a follower relationship

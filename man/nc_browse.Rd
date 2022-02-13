@@ -6,6 +6,9 @@
 \usage{
 nc_browse(cache_name)
 }
+\arguments{
+\item{cache_name}{the name of the cache and associated Docker container}
+}
 \description{
 Interact with a cached graph via the Neo4J browser interface
 }

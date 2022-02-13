@@ -1,7 +1,7 @@
 #' Fetches the friends of each of the users contained in the users vector.
 #' Returns the friend relationships via a tibble edge list.
 #'
-#' @param cache The name of the cache to save data in.
+#' @param cache_name The name of the cache to save data in.
 #' @inheritParams rtweet::get_friends
 #'
 #' @return A tibble where each row corresponds to a follower relationship
@@ -87,9 +87,9 @@ nc_get_friends <- function(users, cache_name, n = 5000, retryonratelimit = TRUE,
 #'   3. Create edges between main users and their respective blank friends
 #'   4. Set the sampled_friends_at property for nodes that were sampled
 #'
-#' @param users a list of users to add friend edges to the db for
-#' @param n how many friends to sample at a time for each user
-#' @param cache the cache to interface with
+#' @inheritParams rtweet::get_friends
+#' @param cache The cache to store information in. Must be a cache, not a
+#'   cache name.
 #'
 #' @return a 2-column tibble edge list from users to their friends
 add_friend_edges_to_nodes_in_graph <- function(users, n, retryonratelimit, cursor, verbose, token, cache) {
@@ -103,6 +103,7 @@ add_friend_edges_to_nodes_in_graph <- function(users, n, retryonratelimit, curso
   sample_time <- Sys.time()
 
   # make sure data returned by API is in the right scope
+  edge_list <- NULL
 
   tryCatch(
     expr = {
@@ -215,8 +216,7 @@ add_friend_edges_to_nodes_in_graph <- function(users, n, retryonratelimit, curso
 #' Checks whether friend data has already been sampled for the provided
 #' vector of users.
 #'
-#' @param users to fetch the sampling status for
-#' @param cache the cache to interface with
+#' @inheritParams add_friend_edges_to_nodes_in_graph
 #'
 #' @return a list of all users who either (1) are not currently in the
 #' graph, (2) are in the graph but their friends have not been sampled,
@@ -250,9 +250,7 @@ friend_sampling_status <- function(users, cache) {
 
 #' Gets the friends for the given user that already exist in the DB.
 #'
-#' @param users a list of users who are already in the DB and
-#' already have friend edge data
-#' @param cache the cache to interface with
+#' @inheritParams add_friend_edges_to_nodes_in_graph
 #'
 #' @return a 2-column tibble edge list with entries from the users in users
 #' to their friends

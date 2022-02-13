@@ -7,9 +7,9 @@
 db_add_new_users(users, cache)
 }
 \arguments{
-\item{cache}{the cache to interface with}
+\item{users}{a vector of users to generate MERGE queries for}
 
-\item{user_ids}{a vector of user_ids to generate MERGE queries for}
+\item{cache}{the cache to interface with}
 }
 \description{
 Merges a batch of nodes to the graph with nothing but user_id's

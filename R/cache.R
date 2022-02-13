@@ -87,7 +87,7 @@ print.neocache_metadata <- function(x, ...) {
 
 #' Interact with a cached graph via the Neo4J browser interface
 #'
-#' @inheritParams nc_cache_exists
+#' @inheritParams nc_create_cache
 #'
 #' @export
 nc_browse <- function(cache_name) {
@@ -98,7 +98,7 @@ nc_browse <- function(cache_name) {
 
 #' Retrieves a previously generated cache object.
 #'
-#' @inheritParams nc_cache_exists
+#' @inheritParams nc_create_cache
 #' @return a list object containing information pertaining to the associated
 #'         Docker container and Neo4j instance
 #'
@@ -121,12 +121,9 @@ get_cache <- function(cache_name) {
   read_rds(cache_path(cache_name))
 }
 
-# TODO: get_cache_and_activate_if_necessary()
-
-
 #' Starts the Docker container and Neo4j instance for the given cache
 #'
-#' @inheritParams nc_cache_exists
+#' @inheritParams nc_create_cache
 #'
 #' @keywords internal
 #'
@@ -200,7 +197,7 @@ is_active <- function(cache) {
 
 #' Stops the Docker container and Neo4j instance for the given cache
 #'
-#' @inheritParams nc_cache_exists
+#' @inheritParams nc_create_cache
 #'
 #' @keywords internal
 #'
@@ -218,7 +215,7 @@ nc_deactivate_cache <- function(cache_name) {
 #' Removes the Docker container and cache save file corresponding to the given
 #' cache
 #'
-#' @inheritParams nc_cache_exists
+#' @inheritParams nc_create_cache
 #'
 #' @importFrom rappdirs app_dir
 #'
@@ -268,7 +265,7 @@ cache_path <- function(cache_name) {
 
 #' Remove all data from a cache
 #'
-#' @inheritParams nc_cache_exists
+#' @inheritParams nc_create_cache
 #' @param check_with_me_first Whether or not to confirm choice to empty
 #'   cache via CLI menu before clearing the cache
 #'
@@ -290,7 +287,7 @@ nc_empty_cache <- function(cache_name, check_with_me_first = TRUE) {
 
 #' Check if a cache with a given name exists
 #'
-#' @inheritParams nc_cache_exists
+#' @inheritParams nc_create_cache
 #'
 #' @return `TRUE` or `FALSE`.
 #' @export

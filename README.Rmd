@@ -36,3 +36,17 @@ library(neocache)
 
 nc_sitrep()
 ```
+
+### Find the personalized pagerank of a Twitter user and cache the following network in the process
+
+**NOTE**: As of January 2022, the following does not work due to a change in the `rtweet` dev version that we have not yet updated `neocache` to accommodate.
+
+```{r neocache-example, eval = FALSE}
+alexpghayes_ppr <- appr(
+  neocache_graph(),
+  "alexpghayes",
+  epsilon = 1e-4
+)
+
+alexpghayes_ppr$stats
+```

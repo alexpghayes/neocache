@@ -7,6 +7,8 @@
 nc_export_all_users(cache_name, local_path)
 }
 \arguments{
+\item{cache_name}{the name of the cache and associated Docker container}
+
 \item{local_path}{path of csv}
 }
 \description{

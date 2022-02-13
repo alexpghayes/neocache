@@ -7,6 +7,9 @@ cache}
 \usage{
 nc_destroy_cache(cache_name)
 }
+\arguments{
+\item{cache_name}{the name of the cache and associated Docker container}
+}
 \description{
 Removes the Docker container and cache save file corresponding to the given
 cache

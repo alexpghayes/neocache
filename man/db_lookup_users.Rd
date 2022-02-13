@@ -7,9 +7,9 @@
 db_lookup_users(users, cache)
 }
 \arguments{
-\item{users}{list of users to fetch existing lookup_user data for in the db}
+\item{users}{User id or screen name of target user.}
 
-\item{cache}{the cache to interface with}
+\item{cache}{A \code{cache} object. See \code{\link[=nc_create_cache]{nc_create_cache()}}.}
 }
 \value{
 a tibble with any existing data for users

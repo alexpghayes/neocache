@@ -6,6 +6,9 @@
 \usage{
 nc_activate_cache(cache_name)
 }
+\arguments{
+\item{cache_name}{the name of the cache and associated Docker container}
+}
 \description{
 Starts the Docker container and Neo4j instance for the given cache
 }

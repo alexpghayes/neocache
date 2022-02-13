@@ -45,7 +45,7 @@ query_neo4j <- function(query, cache, ...) {
 #' This function creates edges en masse between all the nodes provided in the
 #' tbl argument.
 #'
-#' @param tbl tibble containing columns for 'to' and 'from' consisting of user_ids
+#' @param tbl tibble containing columns for 'to' and 'from' consisting of users
 #' @param cache the cache to interface with
 #'
 #' @return the same tibble edge list that was provided as an argument
@@ -71,7 +71,7 @@ docker_bulk_connect_nodes <- function(tbl, cache) {
 
 #' Merges a batch of nodes to the graph with nothing but user_id's
 #'
-#' @param user_ids a vector of user_ids to generate MERGE queries for
+#' @param users a vector of users to generate MERGE queries for
 #' @param cache the cache to interface with
 db_add_new_users <- function(users, cache) {
   tmp <- tempfile()
@@ -87,17 +87,17 @@ db_add_new_users <- function(users, cache) {
 
 #' Gets the followers for the given user that already exist in the DB.
 #'
-#' @param user_ids a list of user_ids who are already in the DB and
+#' @param users a list of users who are already in the DB and
 #' already have follower edge data
 #' @param cache the cache to interface with
 #'
-#' @return a 2-column tibble edge list with entries from the users in user_ids
+#' @return a 2-column tibble edge list with entries from the users in users
 #' to their followers
-db_get_followers <- function(user_ids, cache) {
+db_get_followers <- function(users, cache) {
   query_neo4j(
     paste0(
       'WITH "MATCH (from:User),(to:User) WHERE to.id_str in [\\\'',
-      glue_collapse(user_ids, sep = "\\',\\'"),
+      glue_collapse(users, sep = "\\',\\'"),
       '\\\'] AND (from)-[:FOLLOWS]->(to) RETURN from.id_str, to.id_str" AS query ',
       'CALL apoc.export.csv.query(query, "get_friends.csv", {}) YIELD file RETURN file'
     ),
