@@ -246,13 +246,13 @@ db_lookup_users <- function(users, cache) {
     )
   )
 
-  typed_user_data <- as_user_data(user_data[[1]])
-
   # If the users' data does not exist in the DB, return an empty lookup,
   # otherwise return the users' data
-  if (length(typed_user_data) == 0) {
+  if (length(user_data) == 0) {
     return(empty_user())
   }
+
+  typed_user_data <- as_user_data(user_data$n)
 
   # there's a cheeky hacky here: when nodes are added to Neo4J in the simplest
   # case we add nothing except the id_str. this bind_rows creates NA values
