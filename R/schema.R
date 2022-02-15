@@ -34,6 +34,23 @@ dttm_properties <- c(
   "sampled_followers_at"
 )
 
+as_user_data <- function(data) {
+
+  log_trace(glue("data is {nrow(data)} x {ncol(data)} with type signature"))
+  log_trace(type_signature(data))
+
+  typecast <- data %>%
+    mutate_at(vars(any_of(chr_properties)), as.character) %>%
+    mutate_at(vars(any_of(lgl_properties)), as.logical) %>%
+    mutate_at(vars(any_of(int_properties)), as.integer) %>%
+    mutate_at(vars(any_of(dttm_properties)), as.POSIXct)
+
+  log_trace(glue("typecast is {nrow(typecast)} x {ncol(typecast)} with type signature"))
+  log_trace(type_signature(typecast))
+
+  typecast
+}
+
 #' Create an empty table of user data
 #'
 #' @return an empty tibble with columns named after all of the lookup_user
