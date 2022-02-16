@@ -15,6 +15,7 @@ License: MIT + file LICENSE
 URL: https://github.com/alexpghayes/neocache
 BugReports: https://github.com/alexpghayes/neocache/issues
 Imports: 
+    aPPR (>= 0.0.0.9103),
     cli,
     dplyr,
     glue,
@@ -30,20 +31,19 @@ Imports:
     usethis,
     vctrs
 Suggests: 
-    aPPR (>= 0.0.0.9103),
     covr,
     knitr,
     rmarkdown,
-    testthat
+    testthat (>= 3.0.0)
 VignetteBuilder: 
     knitr
+Remotes: 
+    RoheLab/aPPR,
+    ropensci/rtweet
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
-Remotes: 
-    RoheLab/aPPR,
-    ropensci/rtweet
 Collate: 
     'appr.R'
     'cache.R'
@@ -55,3 +55,4 @@ Collate:
     'neo4j.R'
     'neocache-package.R'
     'utils.R'
+Config/testthat/edition: 3
