@@ -10,3 +10,4 @@
 ^LICENSE\.md$
 ^design$
 ^cran-comments\.md$
+^logs$

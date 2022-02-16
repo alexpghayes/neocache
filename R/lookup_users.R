@@ -110,7 +110,7 @@ add_lookup_users_info_to_nodes_in_graph <- function(users, token, retryonratelim
 
   tryCatch(
     expr = {
-      log_info(glue("Making API request with rtweet::lookup_users  for {length(users)} users"))
+      log_info(glue("Making API request with rtweet::lookup_users for {length(users)} users"))
 
       user_info_raw <<- rtweet::lookup_users(
         users = users,
@@ -168,12 +168,13 @@ add_lookup_users_info_to_nodes_in_graph <- function(users, token, retryonratelim
   log_trace("user_info_raw is: ")
   log_trace(select(user_info_raw, id_str, screen_name))
 
+  user_info_typed <- as_user_data(user_info_raw)
+
   user_info <- tibble(id_str = users) %>%
-    left_join(user_info_raw, by = "id_str") %>%
+    left_join(user_info_typed, by = "id_str") %>%
     select(id_str, any_of(twitter_properties)) %>%
     mutate(
-      sampled_at = as.character(Sys.time()),
-      created_at = as.character(created_at)
+      sampled_at = Sys.time()
     )
 
   tmp <- tempfile()
@@ -206,7 +207,6 @@ add_lookup_users_info_to_nodes_in_graph <- function(users, token, retryonratelim
 
   set_string <- "SET n.id=toInteger(row.id) SET n.name=row.name SET n.screen_name=row.screen_name SET n.location=row.location SET n.description=row.description SET n.url=row.url SET n.protected=toBoolean(row.protected) SET n.followers_count=toInteger(row.followers_count) SET n.friends_count=toInteger(row.friends_count) SET n.listed_count=toInteger(row.listed_count) SET n.created_at=row.created_at SET n.favourites_count=toInteger(row.favourites_count) SET n.verified=toBoolean(row.verified) SET n.statuses_count=toInteger(row.statuses_count) SET n.profile_image_url_https=row.profile_image_url_https SET n.profile_banner_url=row.profile_banner_url SET n.default_profile=toBoolean(row.default_profile) SET n.default_profile_image=toBoolean(row.default_profile_image) SET n.sampled_at=row.sampled_at SET n.account_created_at=row.account_created_at"
 
-
   query <- glue(
     "LOAD CSV WITH HEADERS FROM 'file:///lookup.csv' AS row MATCH (n:User {{id_str:row.id_str}}) ",
     "{set_string} RETURN n.id_str"
@@ -220,6 +220,7 @@ add_lookup_users_info_to_nodes_in_graph <- function(users, token, retryonratelim
 #' Looks up users that are already in the database.
 #'
 #' @inheritParams add_lookup_users_info_to_nodes_in_graph
+#' @include schema.R
 #'
 #' @return a tibble with any existing data for users
 db_lookup_users <- function(users, cache) {
@@ -240,7 +241,7 @@ db_lookup_users <- function(users, cache) {
   log_debug(
     glue(
       "Looking up information on {length(users)} users in Neo4J DB ... ",
-      "{NROW(users)} found in Neo4J database.",
+      "{NROW(user_data)} found in Neo4J database.",
       .trim = FALSE
     )
   )
@@ -251,6 +252,8 @@ db_lookup_users <- function(users, cache) {
     return(empty_user())
   }
 
+  typed_user_data <- as_user_data(user_data$n)
+
   # there's a cheeky hacky here: when nodes are added to Neo4J in the simplest
   # case we add nothing except the id_str. this bind_rows creates NA values
   # for sampled_*_at node properties if they don't exist in the underlying
@@ -259,5 +262,5 @@ db_lookup_users <- function(users, cache) {
   # about node properties and can't use a separate Neo4J query, which seems
   # perfectly reasonable
 
-  bind_rows(empty_user(), user_data[[1]])
+  bind_rows(empty_user(), typed_user_data)
 }
