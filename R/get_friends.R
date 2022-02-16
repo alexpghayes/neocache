@@ -62,9 +62,9 @@ nc_get_friends <- function(users, cache_name, n = 5000, retryonratelimit = TRUE,
     cache = cache
   )
 
-  log_trace(glue("Getting cached friends of {{length(status$sampled_friends_at_not_null)}} users ..."))
+  log_trace(glue("Getting cached friends of {length(status$sampled_friends_at_not_null)} users ..."))
   existing_edges <- db_get_friends(status$sampled_friends_at_not_null, cache)
-  log_trace(glue("Getting cached friends of {{length(status$sampled_friends_at_not_null)}} users ... done"))
+  log_trace(glue("Getting cached friends of {length(status$sampled_friends_at_not_null)} users ... done"))
 
   # need to be careful about duplicate edges here. ideally
   # we guarantee that edges are unique somehow before this, but if not
@@ -131,7 +131,7 @@ add_friend_edges_to_nodes_in_graph <- function(users, n, retryonratelimit, curso
       } else {
         log_warn(
           glue(
-            "Parsing results from API ... results had {NCOL(iris)} columns, treating as empty edgelist."
+            "Parsing results from API ... results had {NCOL(edge_list)} columns, treating as empty edgelist."
           )
         )
 
@@ -193,11 +193,13 @@ add_friend_edges_to_nodes_in_graph <- function(users, n, retryonratelimit, curso
   db_add_new_users(need_to_be_present_in_graph, cache)
 
   log_trace(glue("Adding up to {length(need_to_be_present_in_graph)} new users to Neo4J DB ... done"))
-  log_trace(glue("Adding {NROW(edge_list)} edges from API result into Neo4J graph ..."))
 
-  docker_bulk_connect_nodes(edge_list, cache)
+  if (NROW(edge_list) > 0) {
+    log_trace(glue("Adding {NROW(edge_list)} edges from API result into Neo4J graph ..."))
+    docker_bulk_connect_nodes(edge_list, cache)
+    log_trace(glue("Adding {NROW(edge_list)} edges from API result into Neo4J graph ... done"))
+  }
 
-  log_trace(glue("Adding {NROW(edge_list)} edges from API result into Neo4J graph ... done"))
   log_trace(glue("Setting sampled_friends_at for {length(users)} users ..."))
 
   set_sampled_at_query <- glue(
@@ -209,7 +211,7 @@ add_friend_edges_to_nodes_in_graph <- function(users, n, retryonratelimit, curso
 
   log_trace(glue("Setting sampled_friends_at for {length(users)} users ... done"))
 
-  edge_list
+  as_edge_list(edge_list)
 }
 
 #' Checks whether friend data has already been sampled for the provided

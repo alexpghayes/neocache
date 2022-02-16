@@ -51,6 +51,21 @@ as_user_data <- function(data) {
   typecast
 }
 
+as_edge_list <- function(edges) {
+
+  log_trace(glue("edges is {nrow(edges)} x {ncol(edges)} with type signature"))
+  log_trace(type_signature(edges))
+
+  typed_edges <- edges %>%
+    mutate_at(vars(from_id, to_id), as.character) %>%
+    select(from_id, to_id)
+
+  log_trace(glue("typed_edges is {nrow(typed_edges)} x {ncol(typed_edges)} with type signature"))
+  log_trace(type_signature(typed_edges))
+
+  typed_edges
+}
+
 #' Create an empty table of user data
 #'
 #' @return an empty tibble with columns named after all of the lookup_user
