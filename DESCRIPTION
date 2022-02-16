@@ -20,6 +20,7 @@ Imports:
     dplyr,
     glue,
     logger,
+    lubridate,
     magrittr,
     neo4r,
     pingr,
