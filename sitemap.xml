@@ -25,10 +25,16 @@
     <loc>/index.html</loc>
   </url>
   <url>
+    <loc>/news/index.html</loc>
+  </url>
+  <url>
     <loc>/reference/add_friend_edges_to_nodes_in_graph.html</loc>
   </url>
   <url>
     <loc>/reference/add_lookup_users_info_to_nodes_in_graph.html</loc>
+  </url>
+  <url>
+    <loc>/reference/appr.neocache_graph.html</loc>
   </url>
   <url>
     <loc>/reference/db_add_new_users.html</loc>
@@ -98,6 +104,9 @@
   </url>
   <url>
     <loc>/reference/neocache-package.html</loc>
+  </url>
+  <url>
+    <loc>/reference/neocache_graph.html</loc>
   </url>
   <url>
     <loc>/reference/pipe.html</loc>
