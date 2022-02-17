@@ -91,6 +91,7 @@ print.neocache_metadata <- function(x, ...) {
 #'
 #' @export
 nc_browse <- function(cache_name) {
+  nc_activate_cache(cache_name)
   cache <- get_cache(cache_name)
   utils::browseURL(cache$url)
 }
