@@ -12,5 +12,33 @@ nc_export_all_users(cache_name, local_path)
 \item{local_path}{path of csv}
 }
 \description{
-Export all users from the Neo4J database to a csv
+When reading data back into R, be sure to treat the \code{id_str}, \code{to} and
+\code{from} columns as character rather than integer or double, since
+Twitter user IDs are 64-bit and R does not have support for 64
+bit integers or doubles. See examples for how to read safely exported
+data back into R without accidentally truncation of user IDs.
+}
+\examples{
+
+\dontrun{
+nc_export_all_follows("aPPR", "~/follows.csv")
+
+readr::read_csv(
+  "~/follows.csv",
+  col_types = list(
+    from = col_character(),
+    to = col_character()
+  )
+)
+
+nc_export_all_users("aPPR", "~/users.csv")
+
+readr::read_csv(
+  "~/Desktop/users.csv",
+  col_types = list(
+    id_str = col_character()
+  )
+)
+}
+
 }

@@ -124,8 +124,37 @@ db_get_followers <- function(users, cache) {
 
 #' Export all follows from the Neo4J database to a csv
 #'
+#' When reading data back into R, be sure to treat the `id_str`, `to` and
+#' `from` columns as character rather than integer or double, since
+#' Twitter user IDs are 64-bit and R does not have support for 64
+#' bit integers or doubles. See examples for how to read safely exported
+#' data back into R without accidentally truncation of user IDs.
+#'
 #' @inheritParams nc_cache_exists
 #' @param local_path path of csv
+#'
+#' @examples
+#'
+#' \dontrun{
+#' nc_export_all_follows("aPPR", "~/follows.csv")
+#'
+#' readr::read_csv(
+#'   "~/follows.csv",
+#'   col_types = list(
+#'     from = col_character(),
+#'     to = col_character()
+#'   )
+#' )
+#'
+#' nc_export_all_users("aPPR", "~/users.csv")
+#'
+#' readr::read_csv(
+#'   "~/Desktop/users.csv",
+#'   col_types = list(
+#'     id_str = col_character()
+#'   )
+#' )
+#' }
 #'
 #' @export
 nc_export_all_follows <- function(cache_name, local_path) {
@@ -159,9 +188,10 @@ nc_export_all_follows <- function(cache_name, local_path) {
 
 #' Export all users from the Neo4J database to a csv
 #'
-#' @inheritParams nc_export_all_follows
+#' @inherit nc_export_all_follows params description examples
 #'
 #' @export
+#'
 nc_export_all_users <- function(cache_name, local_path) {
   cache <- nc_activate_cache(cache_name)
   log_trace(glue("Exporting all Users from {cache_name} cache to `users.csv` in Docker ..."))
